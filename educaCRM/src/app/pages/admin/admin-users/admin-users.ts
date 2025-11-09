@@ -1,63 +1,118 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
-
-type Usuario = { username: string; rol: 'alumno'|'profesor'|'jefatura'|'direccion'|'administrador' };
+import { Component, ViewChild, TemplateRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UsuariosService, Usuario } from '../../../core/services/usuarios.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { Role } from '../../../core/auth/auth.service';
 
 @Component({
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Administración de Usuarios</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar usuario...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByUsername"
-    (onView)="verUsuario($event)"
-    (onEdit)="editarUsuario($event)"
-    (onDelete)="eliminarUsuario($event)">
-  </app-data-table>
-  `
+  selector: 'app-admin-users',
+  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  templateUrl: './admin-users.html',
 })
-export class AdminUsersComponent {
-  q = signal('');
-  usuarios = signal<Usuario[]>([
-    { username: 'admin', rol: 'administrador' },
-    { username: 'director1', rol: 'direccion' },
-    { username: 'jefe.estudios', rol: 'jefatura' },
-    { username: 'carlos.martinez', rol: 'profesor' },
-    { username: 'ana.garcia', rol: 'alumno' },
-  ]);
+export class AdminUsersComponent extends BaseCrudListComponent<Usuario> {
+  @ViewChild('modalUsuario') modalUsuario!: GenericModalComponent;
+  @ViewChild('rolBadgeTpl', { static: true }) rolBadgeTpl!: TemplateRef<any>;
+  @ViewChild('activoBadgeTpl', { static: true }) activoBadgeTpl!: TemplateRef<any>;
+  
+  protected get modal(): GenericModalComponent {
+    return this.modalUsuario;
+  }
 
-  columns: TableColumn<Usuario>[] = [
-    { key: 'username', label: 'Username' },
-    { key: 'rol', label: 'Rol' }
+  roles: Role[] = ['alumno', 'profesor', 'jefatura', 'direccion', 'administrador'];
+
+  columns!: TableColumn<Usuario>[];
+
+  actions: ActionButton<Usuario>[] = [
+    {
+      label: 'Editar',
+      btnClass: 'btn-sm btn-outline-primary',
+      onClick: (u) => this.editar(u)
+    },
+    {
+      icon: 'power',
+      btnClass: 'btn-sm btn-outline-warning',
+      tooltip: 'Toggle activo/inactivo',
+      onClick: (u) => this.toggleActivo(u.id)
+    },
+    {
+      label: 'Eliminar',
+      btnClass: 'btn-sm btn-outline-danger',
+      onClick: (u) => this.eliminar(u.id)
+    }
   ];
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.usuarios();
-    return this.usuarios().filter(u =>
-      u.username.toLowerCase().includes(t) ||
-      u.rol.toLowerCase().includes(t)
-    );
-  });
-
-  trackByUsername = (item: Usuario) => item.username;
-
-  verUsuario(usuario: Usuario) {
-    console.log('Ver:', usuario);
+  constructor(public srv: UsuariosService) {
+    super(srv, { id: 0, username: '', rol: 'alumno', nombre: '', email: '', activo: true });
   }
 
-  editarUsuario(usuario: Usuario) {
-    console.log('Editar:', usuario);
+  override ngOnInit(): void {
+    this.srv.loadMock();
+    
+    // Inicializar columnas después de que los templates estén disponibles
+    this.columns = [
+      { key: 'id', header: 'ID', width: '80px' },
+      { 
+        key: 'username',
+        header: 'Usuario',
+        formatter: (val) => val,
+        cellClass: 'fw-bold'
+      },
+      { 
+        key: 'nombre',
+        header: 'Nombre',
+        formatter: (val) => val || '-'
+      },
+      { 
+        key: 'email',
+        header: 'Email',
+        formatter: (val) => val || '-'
+      },
+      {
+        key: 'rol',
+        header: 'Rol',
+        template: this.rolBadgeTpl
+      },
+      {
+        key: 'activo',
+        header: 'Estado',
+        template: this.activoBadgeTpl
+      }
+    ];
   }
 
-  eliminarUsuario(usuario: Usuario) {
-    console.log('Eliminar:', usuario);
+  get usuarios() {
+    return () => this.srv.items();
+  }
+
+  protected override getSearchFields(usuario: Usuario): string[] {
+    return [
+      usuario.username,
+      usuario.rol,
+      usuario.nombre || '',
+      usuario.email || ''
+    ];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar usuario?';
+  }
+
+  toggleActivo(id: number) {
+    this.srv.toggleActivo(id);
+  }
+
+  getRolBadgeClass(rol: Role): string {
+    const classes: Record<Role, string> = {
+      'administrador': 'bg-danger',
+      'direccion': 'bg-primary',
+      'jefatura': 'bg-info',
+      'profesor': 'bg-success',
+      'alumno': 'bg-secondary'
+    };
+    return classes[rol] || 'bg-secondary';
   }
 }

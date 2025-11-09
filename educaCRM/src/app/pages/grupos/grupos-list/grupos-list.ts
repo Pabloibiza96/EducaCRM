@@ -1,63 +1,67 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
-
-type Grupo = { nombre: string; curso: string; tutor: string };
+import { Component, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { GruposService, Grupo } from '../../../core/services/grupos.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 
 @Component({
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Grupos</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar grupo...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByNombre"
-    (onView)="verGrupo($event)"
-    (onEdit)="editarGrupo($event)"
-    (onDelete)="eliminarGrupo($event)">
-  </app-data-table>
-  `
+  selector: 'app-grupos-list',
+  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  templateUrl: './grupos-list.html',
 })
-export class GruposListComponent {
-  q = signal('');
-  grupos = signal<Grupo[]>([
-    { nombre: '1º ESO A', curso: '2024-2025', tutor: 'Carlos Martínez' },
-    { nombre: '1º ESO B', curso: '2024-2025', tutor: 'Laura Sánchez' },
-    { nombre: '2º ESO A', curso: '2024-2025', tutor: 'Pedro Gómez' },
-  ]);
+export class GruposListComponent extends BaseCrudListComponent<Grupo> {
+  @ViewChild('modalGrupo') modalGrupo!: GenericModalComponent;
+
+  protected get modal(): GenericModalComponent {
+    return this.modalGrupo;
+  }
 
   columns: TableColumn<Grupo>[] = [
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'curso', label: 'Curso' },
-    { key: 'tutor', label: 'Tutor' }
+    { key: 'id', header: 'ID', width: '80px' },
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'curso', header: 'Curso' },
+    { key: 'tutor', header: 'Tutor' },
+    { 
+      key: 'numAlumnos',
+      header: 'Nº Alumnos',
+      width: '120px',
+      cellClass: 'text-center'
+    }
   ];
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.grupos();
-    return this.grupos().filter(g =>
-      g.nombre.toLowerCase().includes(t) ||
-      g.curso.toLowerCase().includes(t) ||
-      g.tutor.toLowerCase().includes(t)
-    );
-  });
+  actions: ActionButton<Grupo>[] = [
+    {
+      label: 'Editar',
+      btnClass: 'btn-sm btn-outline-primary',
+      onClick: (g) => this.editar(g)
+    },
+    {
+      label: 'Eliminar',
+      btnClass: 'btn-sm btn-outline-danger',
+      onClick: (g) => this.eliminar(g.id)
+    }
+  ];
 
-  trackByNombre = (item: Grupo) => item.nombre;
-
-  verGrupo(grupo: Grupo) {
-    console.log('Ver:', grupo);
+  constructor(public srv: GruposService) {
+    super(srv, { id: 0, nombre: '', curso: '', tutor: '', numAlumnos: 0 });
   }
 
-  editarGrupo(grupo: Grupo) {
-    console.log('Editar:', grupo);
+  override ngOnInit(): void {
+    this.srv.loadMock();
   }
 
-  eliminarGrupo(grupo: Grupo) {
-    console.log('Eliminar:', grupo);
+  get grupos() {
+    return () => this.srv.items();
+  }
+
+  protected override getSearchFields(grupo: Grupo): string[] {
+    return [grupo.nombre, grupo.curso, grupo.tutor];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar grupo?';
   }
 }

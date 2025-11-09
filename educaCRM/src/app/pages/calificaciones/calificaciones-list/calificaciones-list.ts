@@ -1,64 +1,139 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
+import { Component, computed, ViewChild, TemplateRef } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  CalificacionesService,
+  Calificacion,
+} from '../../../core/services/calificaciones.service';
+import { AlumnosService } from '../../../core/services/alumnos.service';
+import { AsignaturasService } from '../../../core/services/asignaturas.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 
-type Calificacion = { alumno: string; asignatura: string; evaluacion: string; nota: number };
+interface CalificacionView extends Calificacion {
+  alumnoNombre: string;
+  asignaturaNombre: string;
+}
 
 @Component({
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Calificaciones</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar calificación...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByIndex"
-    (onView)="verCalificacion($event)"
-    (onEdit)="editarCalificacion($event)"
-    (onDelete)="eliminarCalificacion($event)">
-  </app-data-table>
-  `
+  selector: 'app-calificaciones-list',
+  imports: [
+    CommonModule,
+    FormsModule,
+    GenericModalComponent,
+    CrudTableComponent,
+    DecimalPipe,
+  ],
+  templateUrl: './calificaciones-list.html',
 })
-export class CalificacionesListComponent {
-  q = signal('');
-  calificaciones = signal<Calificacion[]>([
-    { alumno: 'Ana García', asignatura: 'Matemáticas', evaluacion: '1ª Evaluación', nota: 8.5 },
-    { alumno: 'Luis Pérez', asignatura: 'Lengua', evaluacion: '1ª Evaluación', nota: 7.0 },
-    { alumno: 'María Ruiz', asignatura: 'Ciencias', evaluacion: '2ª Evaluación', nota: 9.0 },
-  ]);
+export class CalificacionesListComponent extends BaseCrudListComponent<Calificacion> {
+  @ViewChild('modalCalificacion') modalCalificacion!: GenericModalComponent;
+  @ViewChild('evaluacionBadgeTpl', { static: true }) evaluacionBadgeTpl!: TemplateRef<any>;
+  @ViewChild('notaTpl', { static: true }) notaTpl!: TemplateRef<any>;
 
-  columns: TableColumn<Calificacion>[] = [
-    { key: 'alumno', label: 'Alumno' },
-    { key: 'asignatura', label: 'Asignatura' },
-    { key: 'evaluacion', label: 'Evaluación' },
-    { key: 'nota', label: 'Nota' }
-  ];
+  protected get modal(): GenericModalComponent {
+    return this.modalCalificacion;
+  }
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.calificaciones();
-    return this.calificaciones().filter(c =>
-      c.alumno.toLowerCase().includes(t) ||
-      c.asignatura.toLowerCase().includes(t) ||
-      c.evaluacion.toLowerCase().includes(t)
-    );
+  evaluaciones = ['1ª', '2ª', '3ª', 'Extraordinaria'];
+
+  view = computed(() => {
+    const cals = this.filtrados() as Calificacion[];
+    const alumnos = this.alumnosService.items();
+    const asignaturas = this.asignaturasService.items();
+
+    return cals.map((c): CalificacionView => {
+      const al = alumnos.find((a) => a.id === c.alumnoId);
+      const as = asignaturas.find((x) => x.id === c.asignaturaId);
+      return {
+        ...c,
+        alumnoNombre: al ? `${al.nombre} ${al.apellidos}` : '—',
+        asignaturaNombre: as ? as.nombre : '—',
+      };
+    });
   });
 
-  trackByIndex = (item: Calificacion) => `${item.alumno}-${item.asignatura}-${item.evaluacion}`;
+  columns!: TableColumn<CalificacionView>[];
 
-  verCalificacion(calificacion: Calificacion) {
-    console.log('Ver:', calificacion);
+  actions: ActionButton<CalificacionView>[] = [
+    {
+      icon: 'pencil',
+      btnClass: 'btn-sm btn-outline-primary',
+      onClick: (c) => this.editar(c)
+    },
+    {
+      icon: 'trash',
+      btnClass: 'btn-sm btn-outline-danger',
+      onClick: (c) => this.eliminar(c.id)
+    }
+  ];
+
+  constructor(
+    public srv: CalificacionesService,
+    public alumnosService: AlumnosService,
+    public asignaturasService: AsignaturasService
+  ) {
+    super(srv, {
+      id: 0,
+      alumnoId: 0,
+      asignaturaId: 0,
+      evaluacion: '1ª',
+      nota: 5,
+    });
   }
 
-  editarCalificacion(calificacion: Calificacion) {
-    console.log('Editar:', calificacion);
+  override ngOnInit(): void {
+    this.srv.loadMock();
+    
+    this.columns = [
+      { 
+        key: 'alumnoNombre',
+        header: 'Alumno'
+      },
+      { 
+        key: 'asignaturaNombre',
+        header: 'Asignatura'
+      },
+      {
+        key: 'evaluacion',
+        header: 'Evaluación',
+        template: this.evaluacionBadgeTpl
+      },
+      {
+        key: 'nota',
+        header: 'Nota',
+        template: this.notaTpl
+      }
+    ];
   }
 
-  eliminarCalificacion(calificacion: Calificacion) {
-    console.log('Eliminar:', calificacion);
+  protected override getSearchFields(cal: Calificacion): string[] {
+    const alumnos = this.alumnosService.items();
+    const asignaturas = this.asignaturasService.items();
+    const al = alumnos.find((a) => a.id === cal.alumnoId);
+    const as = asignaturas.find((x) => x.id === cal.asignaturaId);
+    return [
+      al ? al.nombre : '',
+      al ? al.apellidos : '',
+      as ? as.nombre : '',
+      cal.evaluacion,
+      cal.nota.toString(),
+    ];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar calificación?';
+  }
+
+  getEvaluacionBadgeClass(evaluacion: string): string {
+    const classes: Record<string, string> = {
+      '1ª': 'bg-primary',
+      '2ª': 'bg-info',
+      '3ª': 'bg-warning',
+      'Extraordinaria': 'bg-dark'
+    };
+    return classes[evaluacion] || 'bg-secondary';
   }
 }

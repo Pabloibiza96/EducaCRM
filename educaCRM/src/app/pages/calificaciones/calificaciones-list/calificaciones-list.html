@@ -1,1 +1,70 @@
-<p>calificaciones-list works!</p>
+<div class="container mt-4">
+  <h2 class="mb-4">Calificaciones</h2>
+
+  <button class="btn btn-primary mb-3" (click)="abrirModal(true)">
+    <i class="bi bi-plus-circle"></i> Nueva Calificación
+  </button>
+
+  <input
+    class="form-control mb-3"
+    [(ngModel)]="q"
+    placeholder="Buscar calificación..."
+  />
+
+  <ng-template #evaluacionBadgeTpl let-row>
+    <span class="badge" [ngClass]="getEvaluacionBadgeClass(row.evaluacion)">
+      {{ row.evaluacion }}
+    </span>
+  </ng-template>
+
+  <ng-template #notaTpl let-row>
+    <span class="fw-semibold"
+          [class.text-success]="row.nota >= 5"
+          [class.text-danger]="row.nota < 5">
+      {{ row.nota | number:'1.1-1' }}
+    </span>
+  </ng-template>
+
+  <app-crud-table
+    [data]="view()"
+    [columns]="columns"
+    [actions]="actions"
+  />
+
+  <app-generic-modal
+    #modalCalificacion
+    [title]="modoEdicion ? 'Editar Calificación' : 'Nueva Calificación'"
+    (onSave)="guardar()"
+  >
+    <div class="mb-3">
+      <label class="form-label">Alumno</label>
+      <select class="form-control" [(ngModel)]="actual.alumnoId">
+        <option [ngValue]="0" disabled>Selecciona un alumno</option>
+        @for (al of alumnosService.items(); track al.id) {
+          <option [ngValue]="al.id">{{ al.nombre }} {{ al.apellidos }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Asignatura</label>
+      <select class="form-control" [(ngModel)]="actual.asignaturaId">
+        <option [ngValue]="0" disabled>Selecciona una asignatura</option>
+        @for (asig of asignaturasService.items(); track asig.id) {
+          <option [ngValue]="asig.id">{{ asig.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Evaluación</label>
+      <select class="form-control" [(ngModel)]="actual.evaluacion">
+        @for (ev of evaluaciones; track ev) {
+          <option [value]="ev">{{ ev }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Nota</label>
+      <input type="number" class="form-control" [(ngModel)]="actual.nota" min="0" max="10" step="0.1" />
+    </div>
+  </app-generic-modal>
+</div>

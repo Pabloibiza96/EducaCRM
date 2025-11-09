@@ -1,63 +1,71 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
-
-type Profe = { nombre: string; departamento: string; email: string };
+import { Component, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ProfesoresService, Profesor } from '../../../core/services/profesores.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 
 @Component({
+  selector: 'app-profesores-list',
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Profesores</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar profesor...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByEmail"
-    (onView)="verProfesor($event)"
-    (onEdit)="editarProfesor($event)"
-    (onDelete)="eliminarProfesor($event)">
-  </app-data-table>
-  `
+  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  templateUrl: './profesores-list.html'
 })
-export class ProfesoresListComponent {
-  q = signal('');
-  profesores = signal<Profe[]>([
-    { nombre: 'Carlos Martínez', departamento: 'Matemáticas', email: 'carlos.martinez@educacrm.es' },
-    { nombre: 'Laura Sánchez', departamento: 'Lengua', email: 'laura.sanchez@educacrm.es' },
-    { nombre: 'Pedro Gómez', departamento: 'Ciencias', email: 'pedro.gomez@educacrm.es' },
-  ]);
+export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
+  @ViewChild('modalProfesor') modalProfesor!: GenericModalComponent;
 
-  columns: TableColumn<Profe>[] = [
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'departamento', label: 'Departamento' },
-    { key: 'email', label: 'Email' }
+  protected get modal(): GenericModalComponent {
+    return this.modalProfesor;
+  }
+
+  columns: TableColumn<Profesor>[] = [
+    { key: 'id', header: 'ID', width: '80px' },
+    { 
+      header: 'Nombre',
+      valueGetter: (p) => `${p.nombre} ${p.apellidos}`
+    },
+    { key: 'departamento', header: 'Departamento' },
+    { key: 'email', header: 'Email' },
+    { 
+      key: 'asignaturas',
+      header: 'Asignaturas',
+      formatter: (val) => val || '—'
+    }
   ];
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.profesores();
-    return this.profesores().filter(p =>
-      p.nombre.toLowerCase().includes(t) ||
-      p.departamento.toLowerCase().includes(t) ||
-      p.email.toLowerCase().includes(t)
-    );
-  });
+  actions: ActionButton<Profesor>[] = [
+    {
+      label: 'Editar',
+      btnClass: 'btn-sm btn-outline-primary',
+      onClick: (p) => this.editar(p)
+    },
+    {
+      label: 'Eliminar',
+      btnClass: 'btn-sm btn-outline-danger',
+      onClick: (p) => this.eliminar(p.id)
+    }
+  ];
 
-  trackByEmail = (item: Profe) => item.email;
-
-  verProfesor(profesor: Profe) {
-    console.log('Ver:', profesor);
+  constructor(public profesoresService: ProfesoresService) {
+    super(profesoresService, { id: 0, nombre: '', apellidos: '', email: '', departamento: '', asignaturas: '' });
   }
 
-  editarProfesor(profesor: Profe) {
-    console.log('Editar:', profesor);
+  override ngOnInit(): void {
+    this.profesoresService.loadMock();
   }
 
-  eliminarProfesor(profesor: Profe) {
-    console.log('Eliminar:', profesor);
+  protected override getSearchFields(profesor: Profesor): string[] {
+    return [
+      profesor.nombre,
+      profesor.apellidos,
+      profesor.email,
+      profesor.departamento,
+      profesor.asignaturas || ''
+    ];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar profesor?';
   }
 }

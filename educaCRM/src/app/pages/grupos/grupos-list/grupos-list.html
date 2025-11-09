@@ -1,1 +1,52 @@
-<p>grupos-list works!</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Grupos</h4>
+  <div class="d-flex gap-2">
+    <div class="input-group" style="max-width: 320px;">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input class="form-control" placeholder="Buscar…" [(ngModel)]="q" />
+    </div>
+    <button class="btn btn-success" (click)="abrirModal(true)">
+      <i class="bi bi-plus-lg"></i> Nuevo grupo
+    </button>
+  </div>
+</div>
+
+<!-- Tabla genérica -->
+<app-crud-table
+  [data]="filtrados()"
+  [columns]="columns"
+  [actions]="actions"
+  emptyMessage="Sin resultados">
+</app-crud-table>
+
+<!-- Modal Genérico -->
+<app-generic-modal 
+  #modalGrupo
+  [title]="modoEdicion ? 'Editar grupo' : 'Nuevo grupo'"
+  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Añadir grupo'"
+  headerClass="bg-warning text-dark"
+  confirmBtnClass="btn-warning"
+  (confirm)="guardar()">
+  
+  <form (ngSubmit)="guardar()">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nombre</label>
+        <input class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Curso</label>
+        <input class="form-control" [(ngModel)]="actual.curso" name="curso" required placeholder="Ej: 2024-2025">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Tutor</label>
+        <input class="form-control" [(ngModel)]="actual.tutor" name="tutor" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Número de alumnos</label>
+        <input type="number" class="form-control" [(ngModel)]="actual.numAlumnos" name="numAlumnos" min="0">
+      </div>
+    </div>
+  </form>
+  
+</app-generic-modal>

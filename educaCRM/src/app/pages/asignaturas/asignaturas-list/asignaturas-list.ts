@@ -1,63 +1,67 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
-
-type Asignatura = { nombre: string; codigo: string; curso: string };
+import { Component, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AsignaturasService, Asignatura } from '../../../core/services/asignaturas.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 
 @Component({
+  selector: 'app-asignaturas-list',
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Asignaturas</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar asignatura...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByCodigo"
-    (onView)="verAsignatura($event)"
-    (onEdit)="editarAsignatura($event)"
-    (onDelete)="eliminarAsignatura($event)">
-  </app-data-table>
-  `
+  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  templateUrl: './asignaturas-list.html'
 })
-export class AsignaturasListComponent {
-  q = signal('');
-  asignaturas = signal<Asignatura[]>([
-    { nombre: 'Matemáticas', codigo: 'MAT-001', curso: '1º ESO' },
-    { nombre: 'Lengua Castellana', codigo: 'LEN-001', curso: '1º ESO' },
-    { nombre: 'Ciencias Naturales', codigo: 'CIE-001', curso: '2º ESO' },
-  ]);
+export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> {
+  @ViewChild('modalAsignatura') modalAsignatura!: GenericModalComponent;
+
+  protected get modal(): GenericModalComponent {
+    return this.modalAsignatura;
+  }
 
   columns: TableColumn<Asignatura>[] = [
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'codigo', label: 'Código' },
-    { key: 'curso', label: 'Curso' }
+    { key: 'id', header: 'ID', width: '80px' },
+    { key: 'codigo', header: 'Código', width: '120px' },
+    { key: 'nombre', header: 'Asignatura' },
+    { key: 'curso', header: 'Curso' },
+    { 
+      key: 'profesor',
+      header: 'Profesor',
+      formatter: (val) => val || '—'
+    }
   ];
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.asignaturas();
-    return this.asignaturas().filter(a =>
-      a.nombre.toLowerCase().includes(t) ||
-      a.codigo.toLowerCase().includes(t) ||
-      a.curso.toLowerCase().includes(t)
-    );
-  });
+  actions: ActionButton<Asignatura>[] = [
+    {
+      label: 'Editar',
+      btnClass: 'btn-sm btn-outline-primary',
+      onClick: (a) => this.editar(a)
+    },
+    {
+      label: 'Eliminar',
+      btnClass: 'btn-sm btn-outline-danger',
+      onClick: (a) => this.eliminar(a.id)
+    }
+  ];
 
-  trackByCodigo = (item: Asignatura) => item.codigo;
-
-  verAsignatura(asignatura: Asignatura) {
-    console.log('Ver:', asignatura);
+  constructor(public asignaturasService: AsignaturasService) {
+    super(asignaturasService, { id: 0, nombre: '', codigo: '', curso: '', profesor: '' });
   }
 
-  editarAsignatura(asignatura: Asignatura) {
-    console.log('Editar:', asignatura);
+  override ngOnInit(): void {
+    this.asignaturasService.loadMock();
   }
 
-  eliminarAsignatura(asignatura: Asignatura) {
-    console.log('Eliminar:', asignatura);
+  protected override getSearchFields(asignatura: Asignatura): string[] {
+    return [
+      asignatura.nombre,
+      asignatura.codigo,
+      asignatura.curso,
+      asignatura.profesor || ''
+    ];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar esta asignatura?';
   }
 }

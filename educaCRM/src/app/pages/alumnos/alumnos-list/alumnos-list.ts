@@ -1,63 +1,62 @@
-import { Component, signal, computed } from '@angular/core';
-import { SearchBarComponent } from '../../../shared/components/search-bar/search-bar';
-import { DataTableComponent, TableColumn } from '../../../shared/components/data-table/data-table';
-
-type Alumno = { nombre: string; grupo: string; nia: string };
+import { Component, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AlumnosService, Alumno } from '../../../core/services/alumnos.service';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 
 @Component({
   standalone: true,
-  imports: [SearchBarComponent, DataTableComponent],
-  template: `
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Alumnos</h4>
-    <app-search-bar [(query)]="q" [placeholder]="'Buscar alumno...'"></app-search-bar>
-  </div>
-
-  <app-data-table
-    [data]="filtrados()"
-    [columns]="columns"
-    [trackBy]="trackByNia"
-    (onView)="verAlumno($event)"
-    (onEdit)="editarAlumno($event)"
-    (onDelete)="eliminarAlumno($event)">
-  </app-data-table>
-  `
+  selector: 'app-alumnos-list',
+  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  templateUrl: './alumnos-list.html',
 })
-export class AlumnosListComponent {
-  q = signal('');
-  alumnos = signal<Alumno[]>([
-    { nombre: 'Ana García', grupo: '1º ESO A', nia: 'ALU-0001' },
-    { nombre: 'Luis Pérez', grupo: '1º ESO B', nia: 'ALU-0002' },
-    { nombre: 'María Ruiz', grupo: '2º ESO A', nia: 'ALU-0003' },
-  ]);
+export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
+  @ViewChild('modalAlumno') modalAlumno!: GenericModalComponent;
 
+  protected get modal(): GenericModalComponent {
+    return this.modalAlumno;
+  }
+
+  // Configuración de columnas
   columns: TableColumn<Alumno>[] = [
-    { key: 'nombre', label: 'Nombre' },
-    { key: 'grupo', label: 'Grupo' },
-    { key: 'nia', label: 'NIA' }
+    { key: 'id', header: 'ID', width: '80px' },
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'apellidos', header: 'Apellidos' },
+    { key: 'email', header: 'Email' },
+    { key: 'grupo', header: 'Grupo' }
   ];
 
-  filtrados = computed(() => {
-    const t = this.q().trim().toLowerCase();
-    if (!t) return this.alumnos();
-    return this.alumnos().filter(a =>
-      a.nombre.toLowerCase().includes(t) ||
-      a.grupo.toLowerCase().includes(t) ||
-      a.nia.toLowerCase().includes(t)
-    );
-  });
+  // Configuración de acciones
+  actions: ActionButton<Alumno>[] = [
+    {
+      icon: 'pencil',
+      btnClass: 'btn-sm btn-outline-primary',
+      tooltip: 'Editar',
+      onClick: (alumno) => this.abrirModal(false, alumno)
+    },
+    {
+      icon: 'trash',
+      btnClass: 'btn-sm btn-outline-danger',
+      tooltip: 'Eliminar',
+      onClick: (alumno) => this.eliminar(alumno.id)
+    }
+  ];
 
-  trackByNia = (item: Alumno) => item.nia;
-
-  verAlumno(alumno: Alumno) {
-    console.log('Ver:', alumno);
+  constructor(public alumnosSrv: AlumnosService) {
+    super(alumnosSrv, { id: 0, nombre: '', apellidos: '', email: '', grupo: '' });
   }
 
-  editarAlumno(alumno: Alumno) {
-    console.log('Editar:', alumno);
+  override ngOnInit(): void {
+    this.alumnosSrv.loadMock();
   }
 
-  eliminarAlumno(alumno: Alumno) {
-    console.log('Eliminar:', alumno);
+  protected override getSearchFields(alumno: Alumno): string[] {
+    return [alumno.nombre, alumno.apellidos, alumno.email, alumno.grupo];
+  }
+
+  protected override getDeleteConfirmMessage(): string {
+    return '¿Eliminar alumno?';
   }
 }

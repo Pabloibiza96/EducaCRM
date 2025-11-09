@@ -1,32 +1,32 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed } from '@angular/core';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService, Role } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.css']
 })
 export class NavbarComponent {
-  // simulamos usuario logueado
-  user = signal<{ name: string; role: string } | null>({
-    name: 'Pablo Ibiza',
-    role: 'admin'
-  });
+  constructor(public auth: AuthService, private router: Router) {}
 
-  // rutas del menú
-  links = signal([
-    { label: 'Dashboard', path: '/dashboard', roles: ['admin', 'jefatura', 'profesor', 'alumno'] },
-    { label: 'Alumnos', path: '/alumnos', roles: ['admin', 'jefatura'] },
-    { label: 'Profesores', path: '/profesores', roles: ['admin', 'jefatura'] },
-    { label: 'Departamentos', path: '/departamentos', roles: ['admin', 'direccion'] },
-    { label: 'Calificaciones', path: '/calificaciones', roles: ['admin', 'profesor'] }
-  ]);
+  // Menú filtrado por rol
+  links = [
+    { label: 'Inicio',        path: '/',            roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
+    { label: 'Alumnos',       path: '/alumnos',     roles: ['administrador','jefatura'] as Role[] },
+    { label: 'Profesores',    path: '/profesores',  roles: ['administrador','jefatura'] as Role[] },
+    { label: 'Grupos',        path: '/grupos',      roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
+    { label: 'Asignaturas',   path: '/asignaturas', roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
+    { label: 'Calificaciones',path: '/calificaciones', roles: ['administrador','profesor'] as Role[] },
+    { label: 'Admin',         path: '/admin',       roles: ['administrador','direccion'] as Role[] },
+  ];
 
-  // método logout (simulado)
-  logout() {
-    this.user.set(null);
-  }
+  canSee = (roles: Role[]) => {
+    const u = this.auth.currentUser(); return !!u && roles.includes(u.role);
+  };
+
+  logout() { this.auth.logout(); this.router.navigateByUrl('/login'); }
 }
