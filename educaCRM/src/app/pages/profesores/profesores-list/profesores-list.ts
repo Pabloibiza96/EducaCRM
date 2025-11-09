@@ -5,12 +5,13 @@ import { ProfesoresService, Profesor } from '../../../core/services/profesores.s
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   selector: 'app-profesores-list',
   standalone: true,
   imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
-  templateUrl: './profesores-list.html'
+  templateUrl: './profesores-list.html',
 })
 export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
   @ViewChild('modalProfesor') modalProfesor!: GenericModalComponent;
@@ -38,16 +39,21 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
     {
       label: 'Editar',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (p) => this.editar(p)
+      onClick: (p) => this.editar(p),
+      hidden: () => !this.roleService.canEdit('profesores')
     },
     {
       label: 'Eliminar',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (p) => this.eliminar(p.id)
+      onClick: (p) => this.eliminar(p.id),
+      hidden: () => !this.roleService.canDelete('profesores')
     }
   ];
 
-  constructor(public profesoresService: ProfesoresService) {
+  constructor(
+    public profesoresService: ProfesoresService,
+    public roleService: RoleService
+  ) {
     super(profesoresService, { id: 0, nombre: '', apellidos: '', email: '', departamento: '', asignaturas: '' });
   }
 

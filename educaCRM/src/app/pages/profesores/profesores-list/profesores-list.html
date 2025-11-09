@@ -1,57 +1,46 @@
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">Profesores</h4>
-  <div class="d-flex gap-2">
-    <div class="input-group" style="max-width: 320px;">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input class="form-control" placeholder="Buscar…" [(ngModel)]="q" />
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Gestión de profesores</h3>
+    <div class="d-flex gap-2">
+      <div class="input-group" style="max-width: 320px;">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" placeholder="Buscar profesor…" [(ngModel)]="q">
+      </div>
+      @if (roleService.canCreate('profesores')) {
+        <button class="btn btn-success" (click)="abrirModal(true)">
+          <i class="bi bi-plus-lg"></i> Nuevo profesor
+        </button>
+      }
     </div>
-    <button class="btn btn-success" (click)="abrirModal(true)">
-      <i class="bi bi-plus-lg"></i> Nuevo
-    </button>
   </div>
-</div>
 
-<!-- Tabla genérica -->
-<app-crud-table
-  [data]="filtrados()"
-  [columns]="columns"
-  [actions]="actions"
-  emptyMessage="Sin resultados">
-</app-crud-table>
+  <app-crud-table
+    [data]="filtrados()"
+    [columns]="columns"
+    [actions]="actions">
+  </app-crud-table>
 
-<!-- Modal Genérico -->
-<app-generic-modal 
-  #modalProfesor
-  [title]="modoEdicion ? 'Editar profesor' : 'Nuevo profesor'"
-  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Añadir profesor'"
-  headerClass="bg-success text-white"
-  confirmBtnClass="btn-success"
-  (confirm)="guardar()">
-  
-  <form (ngSubmit)="guardar()">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Nombre</label>
-        <input class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
+  <app-generic-modal
+    #modalProfesor
+    [title]="modoEdicion ? 'Editar Profesor' : 'Nuevo Profesor'"
+    (onSave)="guardar()">
+    <form #formProfesor="ngForm">
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input type="text" class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Apellidos</label>
-        <input class="form-control" [(ngModel)]="actual.apellidos" name="apellidos" required>
+      <div class="mb-3">
+        <label for="apellidos" class="form-label">Apellidos</label>
+        <input type="text" class="form-control" [(ngModel)]="actual.apellidos" name="apellidos" required>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Departamento</label>
-        <input class="form-control" [(ngModel)]="actual.departamento" name="departamento" required>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label">Email</label>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
         <input type="email" class="form-control" [(ngModel)]="actual.email" name="email" required>
       </div>
-      <div class="col-12">
-        <label class="form-label">Asignaturas (opcional)</label>
-        <input class="form-control" [(ngModel)]="actual.asignaturas" name="asignaturas" 
-               placeholder="Ej: Matemáticas, Física">
+      <div class="mb-3">
+        <label for="asignaturas" class="form-label">Asignaturas</label>
+        <input type="text" class="form-control" [(ngModel)]="actual.asignaturas" name="asignaturas" required>
       </div>
-    </div>
-  </form>
-  
-</app-generic-modal>
+    </form>
+  </app-generic-modal>
+</div>

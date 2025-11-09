@@ -10,6 +10,8 @@ import { AsignaturasService } from '../../../core/services/asignaturas.service';
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { RoleService } from '../../../core/auth/role.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 interface CalificacionView extends Calificacion {
   alumnoNombre: string;
@@ -41,10 +43,17 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
 
   view = computed(() => {
     const cals = this.filtrados() as Calificacion[];
+    const user = this.authService.currentUser();
+    
+    // Si es alumno, filtrar solo sus calificaciones
+    const filteredCals = this.roleService.isAlumno() 
+      ? cals.filter(c => c.alumnoId === user?.id)
+      : cals;  // Otros roles ven todas
+    
     const alumnos = this.alumnosService.items();
     const asignaturas = this.asignaturasService.items();
 
-    return cals.map((c): CalificacionView => {
+    return filteredCals.map((c): CalificacionView => {
       const al = alumnos.find((a) => a.id === c.alumnoId);
       const as = asignaturas.find((x) => x.id === c.asignaturaId);
       return {
@@ -61,19 +70,23 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
     {
       icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (c) => this.editar(c)
+      onClick: (c) => this.editar(c),
+      hidden: () => !this.roleService.canEdit('calificaciones')
     },
     {
       icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (c) => this.eliminar(c.id)
+      onClick: (c) => this.eliminar(c.id),
+      hidden: () => !this.roleService.canDelete('calificaciones')
     }
   ];
 
   constructor(
     public srv: CalificacionesService,
     public alumnosService: AlumnosService,
-    public asignaturasService: AsignaturasService
+    public asignaturasService: AsignaturasService,
+    public roleService: RoleService,
+    private authService: AuthService
   ) {
     super(srv, {
       id: 0,

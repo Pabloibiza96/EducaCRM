@@ -6,9 +6,11 @@
         <span class="input-group-text"><i class="bi bi-search"></i></span>
         <input class="form-control" placeholder="Buscar alumno…" [(ngModel)]="q">
       </div>
-      <button class="btn btn-success" (click)="abrirModal(true)">
-        <i class="bi bi-plus-lg"></i> Nuevo alumno
-      </button>
+      @if (roleService.canCreate('alumnos')) {
+        <button class="btn btn-success" (click)="abrirModal(true)">
+          <i class="bi bi-plus-lg"></i> Nuevo alumno
+        </button>
+      }
     </div>
   </div>
 
@@ -16,39 +18,31 @@
   <app-crud-table
     [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions"
-    emptyMessage="No hay alumnos registrados">
+    [actions]="actions">
   </app-crud-table>
-</div>
 
-<!-- Modal -->
-<app-generic-modal 
-  #modalAlumno
-  [title]="modoEdicion ? 'Editar alumno' : 'Nuevo alumno'"
-  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear alumno'"
-  headerClass="bg-info text-white"
-  confirmBtnClass="btn-info"
-  (confirm)="guardar()">
-  
-  <form (ngSubmit)="guardar()">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+  <!-- Modal de edición -->
+  <app-generic-modal
+    #modalAlumno
+    [title]="modoEdicion ? 'Editar Alumno' : 'Nuevo Alumno'"
+    (onSave)="guardar()">
+    <form #formAlumno="ngForm">
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
         <input type="text" class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+      <div class="mb-3">
+        <label for="apellidos" class="form-label">Apellidos</label>
         <input type="text" class="form-control" [(ngModel)]="actual.apellidos" name="apellidos" required>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Email <span class="text-danger">*</span></label>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
         <input type="email" class="form-control" [(ngModel)]="actual.email" name="email" required>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Grupo</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.grupo" name="grupo" placeholder="Ej: 1º DAW">
+      <div class="mb-3">
+        <label for="grupo" class="form-label">Grupo</label>
+        <input type="text" class="form-control" [(ngModel)]="actual.grupo" name="grupo" required>
       </div>
-    </div>
-  </form>
-  
-</app-generic-modal>
+    </form>
+  </app-generic-modal>
+</div>

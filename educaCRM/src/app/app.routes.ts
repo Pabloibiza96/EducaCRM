@@ -11,35 +11,59 @@ export const routes: Routes = [
     path: '',
     canActivate: [authGuard],              
     children: [
-      { path: '', component: DashboardComponent, title: 'Inicio | EducaCRM' },
+      { 
+        path: '', 
+        component: DashboardComponent, 
+        title: 'Inicio | EducaCRM' 
+      },
 
-      { path: 'alumnos',
+      { 
+        path: 'alumnos',
         loadComponent: () => import('./pages/alumnos/alumnos-list/alumnos-list').then(m => m.AlumnosListComponent),
         title: 'Alumnos | EducaCRM',
-        canActivate: [roleGuard], data: { roles: ['administrador','jefatura'] } },
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion', 'jefatura', 'profesor'] }  // Profesor puede ver alumnos
+      },
 
-      { path: 'profesores',
+      { 
+        path: 'profesores',
         loadComponent: () => import('./pages/profesores/profesores-list/profesores-list').then(m => m.ProfesoresListComponent),
         title: 'Profesores | EducaCRM',
-        canActivate: [roleGuard], data: { roles: ['administrador','jefatura'] } },
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion', 'jefatura'] }
+      },
 
-      { path: 'grupos',
+      { 
+        path: 'grupos',
         loadComponent: () => import('./pages/grupos/grupos-list/grupos-list').then(m => m.GruposListComponent),
-        title: 'Grupos | EducaCRM' },
+        title: 'Grupos | EducaCRM',
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion', 'jefatura', 'profesor'] }  // Profesor gestiona grupos asignados
+      },
 
-      { path: 'asignaturas',
+      { 
+        path: 'asignaturas',
         loadComponent: () => import('./pages/asignaturas/asignaturas-list/asignaturas-list').then(m => m.AsignaturasListComponent),
-        title: 'Asignaturas | EducaCRM' },
+        title: 'Asignaturas | EducaCRM',
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion', 'jefatura'] }
+      },
 
-      { path: 'calificaciones',
+      { 
+        path: 'calificaciones',
         loadComponent: () => import('./pages/calificaciones/calificaciones-list/calificaciones-list').then(m => m.CalificacionesListComponent),
         title: 'Calificaciones | EducaCRM',
-        canActivate: [roleGuard], data: { roles: ['administrador','profesor'] } },
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion', 'jefatura', 'profesor', 'alumno'] }  // Todos pueden ver calificaciones (filtrado en componente)
+      },
 
-      { path: 'admin',
+      { 
+        path: 'admin',
         loadComponent: () => import('./pages/admin/admin-users/admin-users').then(m => m.AdminUsersComponent),
         title: 'Admin | EducaCRM',
-        canActivate: [roleGuard], data: { roles: ['administrador','direccion'] } },
+        canActivate: [roleGuard], 
+        data: { roles: ['administrador', 'direccion'] }  // Solo admin y dirección gestionan usuarios
+      },
     ]
   },
 

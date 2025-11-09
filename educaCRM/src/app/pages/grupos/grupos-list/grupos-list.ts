@@ -5,6 +5,7 @@ import { GruposService, Grupo } from '../../../core/services/grupos.service';
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   standalone: true,
@@ -36,16 +37,21 @@ export class GruposListComponent extends BaseCrudListComponent<Grupo> {
     {
       label: 'Editar',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (g) => this.editar(g)
+      onClick: (g) => this.editar(g),
+      hidden: () => !this.roleService.canEdit('grupos')
     },
     {
       label: 'Eliminar',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (g) => this.eliminar(g.id)
+      onClick: (g) => this.eliminar(g.id),
+      hidden: () => !this.roleService.canDelete('grupos')
     }
   ];
 
-  constructor(public srv: GruposService) {
+  constructor(
+    public srv: GruposService,
+    public roleService: RoleService
+  ) {
     super(srv, { id: 0, nombre: '', curso: '', tutor: '', numAlumnos: 0 });
   }
 

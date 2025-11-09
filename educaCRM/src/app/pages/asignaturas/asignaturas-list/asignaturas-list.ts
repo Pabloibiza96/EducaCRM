@@ -5,12 +5,13 @@ import { AsignaturasService, Asignatura } from '../../../core/services/asignatur
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   selector: 'app-asignaturas-list',
   standalone: true,
   imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
-  templateUrl: './asignaturas-list.html'
+  templateUrl: './asignaturas-list.html',
 })
 export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> {
   @ViewChild('modalAsignatura') modalAsignatura!: GenericModalComponent;
@@ -35,16 +36,21 @@ export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> 
     {
       label: 'Editar',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (a) => this.editar(a)
+      onClick: (a) => this.editar(a),
+      hidden: () => !this.roleService.canEdit('asignaturas')
     },
     {
       label: 'Eliminar',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (a) => this.eliminar(a.id)
+      onClick: (a) => this.eliminar(a.id),
+      hidden: () => !this.roleService.canDelete('asignaturas')
     }
   ];
 
-  constructor(public asignaturasService: AsignaturasService) {
+  constructor(
+    public asignaturasService: AsignaturasService,
+    public roleService: RoleService
+  ) {
     super(asignaturasService, { id: 0, nombre: '', codigo: '', curso: '', profesor: '' });
   }
 

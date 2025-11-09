@@ -5,6 +5,7 @@ import { AlumnosService, Alumno } from '../../../core/services/alumnos.service';
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   standalone: true,
@@ -28,23 +29,28 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     { key: 'grupo', header: 'Grupo' }
   ];
 
-  // Configuración de acciones
+  // Configuración de acciones con permisos
   actions: ActionButton<Alumno>[] = [
     {
       icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
       tooltip: 'Editar',
-      onClick: (alumno) => this.abrirModal(false, alumno)
+      onClick: (alumno) => this.abrirModal(false, alumno),
+      hidden: () => !this.roleService.canEdit('alumnos')
     },
     {
       icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
       tooltip: 'Eliminar',
-      onClick: (alumno) => this.eliminar(alumno.id)
+      onClick: (alumno) => this.eliminar(alumno.id),
+      hidden: () => !this.roleService.canDelete('alumnos')
     }
   ];
 
-  constructor(public alumnosSrv: AlumnosService) {
+  constructor(
+    public alumnosSrv: AlumnosService,
+    public roleService: RoleService
+  ) {
     super(alumnosSrv, { id: 0, nombre: '', apellidos: '', email: '', grupo: '' });
   }
 

@@ -6,6 +6,7 @@ import { GenericModalComponent } from '../../../shared/components/generic-modal/
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 import { Role } from '../../../core/auth/auth.service';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   standalone: true,
@@ -30,22 +31,28 @@ export class AdminUsersComponent extends BaseCrudListComponent<Usuario> {
     {
       label: 'Editar',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (u) => this.editar(u)
+      onClick: (u) => this.editar(u),
+      hidden: () => !this.roleService.canEdit('usuarios')
     },
     {
       icon: 'power',
       btnClass: 'btn-sm btn-outline-warning',
       tooltip: 'Toggle activo/inactivo',
-      onClick: (u) => this.toggleActivo(u.id)
+      onClick: (u) => this.toggleActivo(u.id),
+      hidden: () => !this.roleService.canEdit('usuarios')
     },
     {
       label: 'Eliminar',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (u) => this.eliminar(u.id)
+      onClick: (u) => this.eliminar(u.id),
+      hidden: () => !this.roleService.canDelete('usuarios')
     }
   ];
 
-  constructor(public srv: UsuariosService) {
+  constructor(
+    public srv: UsuariosService,
+    public roleService: RoleService
+  ) {
     super(srv, { id: 0, username: '', rol: 'alumno', nombre: '', email: '', activo: true });
   }
 

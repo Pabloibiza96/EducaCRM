@@ -1,67 +1,48 @@
-<div class="container mt-4">
-  <h2 class="mb-4">Administrar Usuarios</h2>
-
-  <button class="btn btn-primary mb-3" (click)="abrirModal(true)">
-    <i class="bi bi-plus-circle"></i> Nuevo Usuario
-  </button>
-
-  <input
-    class="form-control mb-3"
-    [(ngModel)]="q"
-    placeholder="Buscar usuario..."
-  />
-
-  <ng-template #rolBadgeTpl let-row>
-    <span class="badge" [ngClass]="getRolBadgeClass(row.rol)">
-      {{ row.rol }}
-    </span>
-  </ng-template>
-
-  <ng-template #activoBadgeTpl let-row>
-    <span class="badge" [ngClass]="row.activo ? 'bg-success' : 'bg-secondary'">
-      {{ row.activo ? 'Activo' : 'Inactivo' }}
-    </span>
-  </ng-template>
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Administración de usuarios</h3>
+    <div class="d-flex gap-2">
+      <div class="input-group" style="max-width: 320px;">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" placeholder="Buscar usuario…" [(ngModel)]="q">
+      </div>
+      @if (roleService.canCreate('usuarios')) {
+        <button class="btn btn-success" (click)="abrirModal(true)">
+          <i class="bi bi-plus-lg"></i> Nuevo usuario
+        </button>
+      }
+    </div>
+  </div>
 
   <app-crud-table
     [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions"
-  />
+    [actions]="actions">
+  </app-crud-table>
 
   <app-generic-modal
     #modalUsuario
     [title]="modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario'"
-    (onSave)="guardar()"
-  >
-    <div class="mb-3">
-      <label class="form-label">Usuario</label>
-      <input class="form-control" [(ngModel)]="actual.username" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Nombre</label>
-      <input class="form-control" [(ngModel)]="actual.nombre" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Email</label>
-      <input class="form-control" [(ngModel)]="actual.email" />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Rol</label>
-      <select class="form-control" [(ngModel)]="actual.rol">
-        @for (rol of roles; track rol) {
-          <option [value]="rol">{{ rol }}</option>
-        }
-      </select>
-    </div>
-    <div class="form-check">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        [(ngModel)]="actual.activo"
-        id="checkActivo"
-      />
-      <label class="form-check-label" for="checkActivo">Activo</label>
-    </div>
+    (onSave)="guardar()">
+    <form #formUsuario="ngForm">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" [(ngModel)]="actual.username" name="username" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" [(ngModel)]="actual.email" name="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="rol" class="form-label">Rol</label>
+        <select class="form-select" [(ngModel)]="actual.rol" name="rol" required>
+          <option value="administrador">Administrador</option>
+          <option value="direccion">Dirección</option>
+          <option value="jefatura">Jefatura</option>
+          <option value="profesor">Profesor</option>
+          <option value="alumno">Alumno</option>
+        </select>
+      </div>
+    </form>
   </app-generic-modal>
 </div>
