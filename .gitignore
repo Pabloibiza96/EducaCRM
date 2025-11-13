@@ -1,1 +1,63 @@
+
 .DS_Store
+Thumbs.db
+
+# ───────────────────────────────
+#   Node.js
+# ───────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+
+# ───────────────────────────────
+#   Dist / Build
+# ───────────────────────────────
+dist/
+build/
+tmp/
+temp/
+
+# ───────────────────────────────
+#   TypeScript
+# ───────────────────────────────
+*.tsbuildinfo
+
+# ───────────────────────────────
+#   Angular
+# ───────────────────────────────
+frontend/.angular/
+frontend/.cache/
+frontend/dist/
+
+# ───────────────────────────────
+#   Backend (TypeORM)
+# ───────────────────────────────
+backend/educaCRM-api/dist/
+backend/educaCRM-api/ormlog.log
+
+# ───────────────────────────────
+#   Env files
+# ───────────────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# ───────────────────────────────
+#   Logs
+# ───────────────────────────────
+logs/
+*.log
+log.txt
+
+# ───────────────────────────────
+#   IDE / Editor
+# ───────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
