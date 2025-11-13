@@ -58,7 +58,7 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
   }
 
   override ngOnInit(): void {
-    this.profesoresService.loadMock();
+    this.profesoresService.load();
   }
 
   protected override getSearchFields(profesor: Profesor): string[] {

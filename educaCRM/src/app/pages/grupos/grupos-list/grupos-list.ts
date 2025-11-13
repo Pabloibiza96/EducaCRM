@@ -56,7 +56,7 @@ export class GruposListComponent extends BaseCrudListComponent<Grupo> {
   }
 
   override ngOnInit(): void {
-    this.srv.loadMock();
+    this.srv.load();
   }
 
   get grupos() {

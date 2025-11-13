@@ -57,7 +57,7 @@ export class AdminUsersComponent extends BaseCrudListComponent<Usuario> {
   }
 
   override ngOnInit(): void {
-    this.srv.loadMock();
+    this.srv.load();
     
     // Inicializar columnas después de que los templates estén disponibles
     this.columns = [

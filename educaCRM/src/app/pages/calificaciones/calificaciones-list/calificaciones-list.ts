@@ -1,5 +1,5 @@
 import { Component, computed, ViewChild, TemplateRef } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   CalificacionesService,
@@ -26,7 +26,6 @@ interface CalificacionView extends Calificacion {
     FormsModule,
     GenericModalComponent,
     CrudTableComponent,
-    DecimalPipe,
   ],
   templateUrl: './calificaciones-list.html',
 })
@@ -98,7 +97,14 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
   }
 
   override ngOnInit(): void {
-    this.srv.loadMock();
+    // Cargar datos de forma coordinada para evitar race conditions
+    this.srv.loadWithDependencies().subscribe({
+      next: ({ alumnos, asignaturas, calificaciones }) => {
+        this.alumnosService.setAll(alumnos as any);
+        this.asignaturasService.setAll(asignaturas as any);
+        this.srv.setAll(calificaciones);
+      }
+    });
     
     this.columns = [
       { 

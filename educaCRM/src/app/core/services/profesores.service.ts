@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
 import { BaseCrudService } from './base-crud.service';
+import { NotificationService } from './notification.service';
 
 export interface Profesor {
   id: number;
@@ -12,11 +15,32 @@ export interface Profesor {
 
 @Injectable({ providedIn: 'root' })
 export class ProfesoresService extends BaseCrudService<Profesor> {
-  loadMock() {
-    this.setAll([
-      { id: 1, nombre: 'Laura', apellidos: 'Gómez Pérez', email: 'laura@educa.com', departamento: 'Matemáticas', asignaturas: 'Matemáticas, Álgebra' },
-      { id: 2, nombre: 'Carlos', apellidos: 'Ruiz Torres', email: 'carlos@educa.com', departamento: 'Lengua', asignaturas: 'Lengua, Literatura' },
-      { id: 3, nombre: 'Ana', apellidos: 'Martín López', email: 'ana@educa.com', departamento: 'Inglés', asignaturas: 'Inglés' },
-    ]);
+
+  constructor(
+    private http: HttpClient,
+    private notifications: NotificationService
+  ) {
+    super();
+  }
+
+  /**
+   * Carga los profesores desde el backend.
+   * Usa el proxy de Angular para redirigir a http://localhost:3000/api/profesores.
+   */
+  load() {
+    this.http.get<Profesor[]>('/api/profesores').pipe(
+      catchError(err => {
+        console.error('❌ Error cargando profesores:', err);
+        this.notifications.error('Error al cargar los profesores. Intenta de nuevo.');
+        return of([]);
+      })
+    ).subscribe({
+      next: (data) => {
+        this.setAll(data);
+        if (data.length > 0) {
+          this.notifications.success(`${data.length} profesores cargados correctamente`);
+        }
+      }
+    });
   }
 }

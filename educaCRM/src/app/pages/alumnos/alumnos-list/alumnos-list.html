@@ -28,20 +28,81 @@
     (onSave)="guardar()">
     <form #formAlumno="ngForm">
       <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
+        <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+        <input 
+          type="text" 
+          class="form-control" 
+          [(ngModel)]="actual.nombre" 
+          name="nombre" 
+          #nombreInput="ngModel"
+          required 
+          minlength="2"
+          maxlength="50"
+          [class.is-invalid]="nombreInput.invalid && nombreInput.touched">
+        @if (nombreInput.invalid && nombreInput.touched) {
+          <div class="invalid-feedback">
+            @if (nombreInput.errors?.['required']) {
+              El nombre es requerido
+            }
+            @if (nombreInput.errors?.['minlength']) {
+              El nombre debe tener al menos 2 caracteres
+            }
+          </div>
+        }
       </div>
       <div class="mb-3">
-        <label for="apellidos" class="form-label">Apellidos</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.apellidos" name="apellidos" required>
+        <label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+        <input 
+          type="text" 
+          class="form-control" 
+          [(ngModel)]="actual.apellidos" 
+          name="apellidos"
+          #apellidosInput="ngModel"
+          required
+          minlength="2"
+          maxlength="100"
+          [class.is-invalid]="apellidosInput.invalid && apellidosInput.touched">
+        @if (apellidosInput.invalid && apellidosInput.touched) {
+          <div class="invalid-feedback">
+            @if (apellidosInput.errors?.['required']) {
+              Los apellidos son requeridos
+            }
+            @if (apellidosInput.errors?.['minlength']) {
+              Los apellidos deben tener al menos 2 caracteres
+            }
+          </div>
+        }
       </div>
       <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" [(ngModel)]="actual.email" name="email" required>
+        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+        <input 
+          type="email" 
+          class="form-control" 
+          [(ngModel)]="actual.email" 
+          name="email"
+          #emailInput="ngModel"
+          required
+          email
+          [class.is-invalid]="emailInput.invalid && emailInput.touched">
+        @if (emailInput.invalid && emailInput.touched) {
+          <div class="invalid-feedback">
+            @if (emailInput.errors?.['required']) {
+              El email es requerido
+            }
+            @if (emailInput.errors?.['email']) {
+              El formato del email no es válido
+            }
+          </div>
+        }
       </div>
       <div class="mb-3">
         <label for="grupo" class="form-label">Grupo</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.grupo" name="grupo" required>
+        <input 
+          type="text" 
+          class="form-control" 
+          [(ngModel)]="actual.grupo" 
+          name="grupo"
+          maxlength="50">
       </div>
     </form>
   </app-generic-modal>

@@ -55,7 +55,7 @@ export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> 
   }
 
   override ngOnInit(): void {
-    this.asignaturasService.loadMock();
+    this.asignaturasService.load();
   }
 
   protected override getSearchFields(asignatura: Asignatura): string[] {

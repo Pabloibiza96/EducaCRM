@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
 import { BaseCrudService } from './base-crud.service';
+import { NotificationService } from './notification.service';
 
 export interface Grupo {
   id: number;
@@ -11,14 +14,33 @@ export interface Grupo {
 
 @Injectable({ providedIn: 'root' })
 export class GruposService extends BaseCrudService<Grupo> {
-  
-  loadMock() {
-    this.setAll([
-      { id: 1, nombre: '1º ESO A', curso: '2024-2025', tutor: 'Carlos Martínez', numAlumnos: 25 },
-      { id: 2, nombre: '1º ESO B', curso: '2024-2025', tutor: 'Laura Sánchez', numAlumnos: 23 },
-      { id: 3, nombre: '2º ESO A', curso: '2024-2025', tutor: 'Pedro Gómez', numAlumnos: 27 },
-      { id: 4, nombre: '2º ESO B', curso: '2024-2025', tutor: 'Ana López', numAlumnos: 24 },
-    ]);
+
+  constructor(
+    private http: HttpClient,
+    private notifications: NotificationService
+  ) {
+    super();
+  }
+
+  /**
+   * Carga los grupos desde el backend.
+   * Usa el proxy de Angular para redirigir a http://localhost:3000/api/grupos.
+   */
+  load() {
+    this.http.get<Grupo[]>('/api/grupos').pipe(
+      catchError(err => {
+        console.error('❌ Error cargando grupos:', err);
+        this.notifications.error('Error al cargar los grupos. Intenta de nuevo.');
+        return of([]);
+      })
+    ).subscribe({
+      next: (data) => {
+        this.setAll(data);
+        if (data.length > 0) {
+          this.notifications.success(`${data.length} grupos cargados correctamente`);
+        }
+      }
+    });
   }
 
   // Alias para mantener compatibilidad con código existente
