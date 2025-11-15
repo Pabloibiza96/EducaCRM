@@ -1,45 +1,66 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
 import { BaseCrudService } from './base-crud.service';
-import { NotificationService } from './notification.service';
 
 export interface Alumno {
   id: number;
+  nia: string;
+  fechaAlta: string | null;
   nombre: string;
   apellidos: string;
-  email: string;
-  grupo: string;
+  email: string | null;
+  grupo: string | null;
+}
+
+export interface AlumnoPayload {
+  nombre: string;
+  apellidos: string;
+  email?: string | null;
+  grupo?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AlumnosService extends BaseCrudService<Alumno> {
 
-  constructor(
-    private http: HttpClient,
-    private notifications: NotificationService
-  ) {
+  constructor(private http: HttpClient) {
     super();
   }
 
-  /**
-   * Carga los alumnos desde el backend.
-   * Usa el proxy de Angular para redirigir a http://localhost:3000/api/alumnos.
-   */
+  /** Carga inicial desde backend */
   load() {
-    this.http.get<Alumno[]>('/api/alumnos').pipe(
-      catchError(err => {
-        console.error('❌ Error cargando alumnos:', err);
-        this.notifications.error('Error al cargar los alumnos. Intenta de nuevo.');
-        return of([]);
-      })
-    ).subscribe({
-      next: (data) => {
-        this.setAll(data);
-        if (data.length > 0) {
-          this.notifications.success(`${data.length} alumnos cargados correctamente`);
-        }
-      }
+    this.http.get<Alumno[]>('/api/alumnos').subscribe({
+      next: (data) => this.setAll(data),
+      error: (err) => console.error('Error cargando alumnos', err),
+    });
+  }
+
+  /** Crear alumno en backend + actualizar estado local */
+  createAlumno(payload: AlumnoPayload) {
+    return this.http.post<Alumno>('/api/alumnos', payload).subscribe({
+      next: (alumno) => {
+        this.add(alumno); // actualiza la señal local
+      },
+      error: (err) => console.error('Error creando alumno', err),
+    });
+  }
+
+  /** Actualizar alumno en backend + actualizar estado local */
+  updateAlumno(id: number, payload: AlumnoPayload) {
+    return this.http.put<Alumno>(`/api/alumnos/${id}`, payload).subscribe({
+      next: (alumno) => {
+        this.update(id, alumno); // sustituye en la lista local
+      },
+      error: (err) => console.error('Error actualizando alumno', err),
+    });
+  }
+
+  /** Borrar alumno en backend + actualizar estado local */
+  deleteAlumno(id: number) {
+    return this.http.delete<void>(`/api/alumnos/${id}`).subscribe({
+      next: () => {
+        this.delete(id); // lo quita de la señal local
+      },
+      error: (err) => console.error('Error eliminando alumno', err),
     });
   }
 }

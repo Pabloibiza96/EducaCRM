@@ -6,6 +6,7 @@
         <span class="input-group-text"><i class="bi bi-search"></i></span>
         <input class="form-control" placeholder="Buscar alumno…" [(ngModel)]="q">
       </div>
+
       @if (roleService.canCreate('alumnos')) {
         <button class="btn btn-success" (click)="abrirModal(true)">
           <i class="bi bi-plus-lg"></i> Nuevo alumno
@@ -21,14 +22,21 @@
     [actions]="actions">
   </app-crud-table>
 
-  <!-- Modal de edición -->
+  <!-- Modal de creación / edición -->
   <app-generic-modal
     #modalAlumno
-    [title]="modoEdicion ? 'Editar Alumno' : 'Nuevo Alumno'"
-    (onSave)="guardar()">
+    [title]="modoEdicion ? 'Editar alumno' : 'Nuevo alumno'"
+    [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear alumno'"
+    [cancelText]="'Cancelar'"
+    headerClass="bg-info text-white"
+    confirmBtnClass="btn-info"
+    (confirm)="guardar()">  
+
     <form #formAlumno="ngForm">
       <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+        <label for="nombre" class="form-label">
+          Nombre <span class="text-danger">*</span>
+        </label>
         <input 
           type="text" 
           class="form-control" 
@@ -39,6 +47,7 @@
           minlength="2"
           maxlength="50"
           [class.is-invalid]="nombreInput.invalid && nombreInput.touched">
+
         @if (nombreInput.invalid && nombreInput.touched) {
           <div class="invalid-feedback">
             @if (nombreInput.errors?.['required']) {
@@ -50,8 +59,11 @@
           </div>
         }
       </div>
+
       <div class="mb-3">
-        <label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+        <label for="apellidos" class="form-label">
+          Apellidos <span class="text-danger">*</span>
+        </label>
         <input 
           type="text" 
           class="form-control" 
@@ -62,6 +74,7 @@
           minlength="2"
           maxlength="100"
           [class.is-invalid]="apellidosInput.invalid && apellidosInput.touched">
+
         @if (apellidosInput.invalid && apellidosInput.touched) {
           <div class="invalid-feedback">
             @if (apellidosInput.errors?.['required']) {
@@ -73,8 +86,11 @@
           </div>
         }
       </div>
+
       <div class="mb-3">
-        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+        <label for="email" class="form-label">
+          Email <span class="text-danger">*</span>
+        </label>
         <input 
           type="email" 
           class="form-control" 
@@ -84,6 +100,7 @@
           required
           email
           [class.is-invalid]="emailInput.invalid && emailInput.touched">
+
         @if (emailInput.invalid && emailInput.touched) {
           <div class="invalid-feedback">
             @if (emailInput.errors?.['required']) {
@@ -95,6 +112,7 @@
           </div>
         }
       </div>
+
       <div class="mb-3">
         <label for="grupo" class="form-label">Grupo</label>
         <input 

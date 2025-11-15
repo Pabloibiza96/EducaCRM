@@ -9,6 +9,7 @@ import { Alumno } from "./entities/Alumno.js";
 import { Profesor } from "./entities/Profesor.js";
 import { Asignatura } from "./entities/Asignatura.js";
 import { Grupo } from "./entities/Grupo.js";
+import { GrupoAsignatura } from "./entities/GrupoAsignatura.js";
 import { Calificacion } from "./entities/Calificacion.js";
 import { Matricula } from "./entities/Matricula.js";
 
@@ -33,6 +34,7 @@ export const AppDataSource = new DataSource({
     Profesor,
     Asignatura,
     Grupo,
+    GrupoAsignatura,
     Calificacion,
     Matricula
   ],

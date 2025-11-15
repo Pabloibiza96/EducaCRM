@@ -13,14 +13,14 @@ export class Matricula {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToOne(() => Alumno, { eager: true })
+  @ManyToOne(() => Alumno, (a) => a.matriculas, { eager: true })
   @JoinColumn({ name: "alumno_id" })
   alumno!: Alumno;
 
-  @ManyToOne(() => Grupo, { eager: true })
+  @ManyToOne(() => Grupo, (g) => g.matriculas, { eager: true })
   @JoinColumn({ name: "grupo_id" })
   grupo!: Grupo;
 
-  @Column("date", { nullable: true })
+  @Column({ type: "date", nullable: true })
   fecha!: string | null;
 }

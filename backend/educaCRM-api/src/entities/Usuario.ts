@@ -1,13 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
+import { Persona } from "./Persona.js";
 
-export type RolUsuario = "alumno" | "profesor" | "jefatura" | "direccion" | "administrador";
+export type RolUsuario =
+  | "alumno"
+  | "profesor"
+  | "jefatura"
+  | "direccion"
+  | "administrador";
 
 @Entity("usuarios")
 export class Usuario {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: "varchar", length: 50, unique: true })
+  @Column({ type: "varchar", length: 50 })
   username!: string;
 
   @Column({ name: "password_hash", type: "varchar", length: 255 })
@@ -19,6 +31,7 @@ export class Usuario {
   })
   rol!: RolUsuario;
 
-  @Column({ name: "persona_id", type: "int" })
-  personaId!: number;
+  @ManyToOne(() => Persona, (p) => p.usuarios, { eager: true })
+  @JoinColumn({ name: "persona_id" })
+  persona!: Persona;
 }
