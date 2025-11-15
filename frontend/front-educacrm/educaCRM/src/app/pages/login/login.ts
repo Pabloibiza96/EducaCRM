@@ -25,8 +25,8 @@ import { AuthService } from '../../core/auth/auth.service';
             <button class="btn btn-primary w-100" [disabled]="loading">Entrar</button>
           </form>
 
-          <p class="mt-3 text-muted small">
-            Demo: admin / profe / alumno / jefatura / direccion (cualquier contraseña)
+            <p class="mt-3 text-muted small">
+          Demo: admin / agarcia / lperez con contraseña <strong>admin</strong>
           </p>
         </div>
       </div>

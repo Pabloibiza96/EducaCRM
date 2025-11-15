@@ -25,7 +25,7 @@ export class NavbarComponent {
   ];
 
   canSee = (roles: Role[]) => {
-    const u = this.auth.currentUser(); return !!u && roles.includes(u.role);
+    const u = this.auth.currentUser(); return !!u && roles.includes(u.rol);
   };
 
   logout() { this.auth.logout(); this.router.navigateByUrl('/login'); }

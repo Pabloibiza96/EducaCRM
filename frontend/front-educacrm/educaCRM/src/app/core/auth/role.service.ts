@@ -96,7 +96,7 @@ export class RoleService {
     const user = this.authService.currentUser();
     if (!user) return false;
 
-    const permissions = ROLE_PERMISSIONS[user.role] || [];
+    const permissions = ROLE_PERMISSIONS[user.rol] || [];
     return permissions.includes(permission);
   }
 
@@ -120,7 +120,7 @@ export class RoleService {
   hasRole(...roles: Role[]): boolean {
     const user = this.authService.currentUser();
     if (!user) return false;
-    return roles.includes(user.role);
+    return roles.includes(user.rol);
   }
 
   /**
@@ -164,7 +164,7 @@ export class RoleService {
   getUserPermissions(): Permission[] {
     const user = this.authService.currentUser();
     if (!user) return [];
-    return ROLE_PERMISSIONS[user.role] || [];
+    return ROLE_PERMISSIONS[user.rol] || [];
   }
 
   /**
