@@ -1,33 +1,31 @@
-import type { Request, Response } from 'express';
+import { Request, Response } from "express";
+import { AppDataSource } from "../data-source.js";
+import { Asignatura } from "../entities/Asignatura.js";
 
-let asignaturas = [
-  { id: 1, nombre: 'Programación', codigo: 'PROG101', horas: 160, curso: '1º DAW' },
-  { id: 2, nombre: 'Bases de Datos', codigo: 'BD102', horas: 120, curso: '1º DAW' },
-  { id: 3, nombre: 'Desarrollo Web', codigo: 'WEB201', horas: 180, curso: '2º DAW' },
-];
+const asignaturasRepo = AppDataSource.getRepository(Asignatura);
 
-export const getAsignaturas = (_req: Request, res: Response) => {
-  res.json(asignaturas);
+export const getAsignaturas = async (_req: Request, res: Response) => {
+  try {
+    const asignaturas = await asignaturasRepo.find();
+    res.json(asignaturas);
+  } catch (error) {
+    console.error("Error obteniendo asignaturas", error);
+    res.status(500).json({ message: "Error obteniendo asignaturas" });
+  }
 };
 
-export const addAsignatura = (req: Request, res: Response) => {
-  const nueva = { id: asignaturas.length + 1, ...req.body };
-  asignaturas.push(nueva);
-  res.status(201).json(nueva);
-};
+export const getAsignaturaById = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const asignatura = await asignaturasRepo.findOne({ where: { id } });
 
-export const updateAsignatura = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  const index = asignaturas.findIndex(a => a.id === parseInt(id));
-  if (index === -1) return res.status(404).json({ message: 'Asignatura no encontrada' });
-  asignaturas[index] = { ...asignaturas[index], ...req.body };
-  res.json(asignaturas[index]);
-};
+    if (!asignatura) {
+      return res.status(404).json({ message: "Asignatura no encontrada" });
+    }
 
-export const deleteAsignatura = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  asignaturas = asignaturas.filter(a => a.id !== parseInt(id));
-  res.json({ message: 'Asignatura eliminada' });
+    res.json(asignatura);
+  } catch (error) {
+    console.error("Error obteniendo asignatura", error);
+    res.status(500).json({ message: "Error obteniendo asignatura" });
+  }
 };

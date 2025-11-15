@@ -43,22 +43,36 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
   view = computed(() => {
     const cals = this.filtrados() as Calificacion[];
     const user = this.authService.currentUser();
-    
+
     // Si es alumno, filtrar solo sus calificaciones
-    const filteredCals = this.roleService.isAlumno() 
+    const filteredCals = this.roleService.isAlumno()
       ? cals.filter(c => c.alumnoId === user?.id)
       : cals;  // Otros roles ven todas
-    
+
     const alumnos = this.alumnosService.items();
     const asignaturas = this.asignaturasService.items();
 
     return filteredCals.map((c): CalificacionView => {
+      let alumnoNombre = '—';
       const al = alumnos.find((a) => a.id === c.alumnoId);
+      if (al) {
+        alumnoNombre = al.nombre && al.apellidos ? `${al.nombre} ${al.apellidos}` : al.nombre || al.apellidos || '—';
+      } else if (c.alumno) {
+        alumnoNombre = c.alumno.nia || String(c.alumno.id) || '—';
+      }
+
+      let asignaturaNombre = '—';
       const as = asignaturas.find((x) => x.id === c.asignaturaId);
+      if (as) {
+        asignaturaNombre = as.nombre || '—';
+      } else if (c.asignatura) {
+        asignaturaNombre = c.asignatura.nombre || c.asignatura.codigo || '—';
+      }
+
       return {
         ...c,
-        alumnoNombre: al ? `${al.nombre} ${al.apellidos}` : '—',
-        asignaturaNombre: as ? as.nombre : '—',
+        alumnoNombre,
+        asignaturaNombre,
       };
     });
   });

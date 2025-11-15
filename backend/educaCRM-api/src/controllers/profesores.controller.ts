@@ -1,32 +1,66 @@
-import type { Request, Response } from 'express';
+import { Request, Response } from "express";
+import { AppDataSource } from "../data-source.js";
+import { Profesor } from "../entities/Profesor.js";
 
-let profesores = [
-  { id: 1, nombre: 'Juan Pérez', apellidos: 'Sánchez', email: 'juan@edu.com', departamento: 'Informática' },
-  { id: 2, nombre: 'María González', apellidos: 'Rodríguez', email: 'maria@edu.com', departamento: 'Matemáticas' },
-];
+export const getProfesores = async (_req: Request, res: Response) => {
+  try {
+    const rows = await AppDataSource.getRepository(Profesor).query(
+      `
+      SELECT 
+        pr.id AS id,
+        p.nombre AS nombre,
+        p.apellidos AS apellidos,
+        p.email AS email,
+        d.nombre AS departamento,
+        GROUP_CONCAT(DISTINCT asig.nombre ORDER BY asig.nombre SEPARATOR ', ') AS asignaturas
+      FROM profesores pr
+      INNER JOIN personas p ON p.id = pr.id
+      LEFT JOIN departamentos d ON d.id = pr.departamento_id
+      LEFT JOIN grupo_asignatura ga ON ga.profesor_id = pr.id
+      LEFT JOIN asignaturas asig ON asig.id = ga.asignatura_id
+      GROUP BY pr.id, p.nombre, p.apellidos, p.email, d.nombre
+      ORDER BY p.apellidos, p.nombre
+      `
+    );
 
-export const getProfesores = (_req: Request, res: Response) => {
-  res.json(profesores);
+    res.json(rows);
+  } catch (error) {
+    console.error("Error al obtener profesores:", error);
+    res.status(500).json({ error: "Error al obtener profesores" });
+  }
 };
 
-export const addProfesor = (req: Request, res: Response) => {
-  const nuevo = { id: profesores.length + 1, ...req.body };
-  profesores.push(nuevo);
-  res.status(201).json(nuevo);
-};
+export const getProfesorById = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
 
-export const updateProfesor = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  const index = profesores.findIndex(p => p.id === parseInt(id));
-  if (index === -1) return res.status(404).json({ message: 'Profesor no encontrado' });
-  profesores[index] = { ...profesores[index], ...req.body };
-  res.json(profesores[index]);
-};
+    const rows = await AppDataSource.getRepository(Profesor).query(
+      `
+      SELECT 
+        pr.id AS id,
+        p.nombre AS nombre,
+        p.apellidos AS apellidos,
+        p.email AS email,
+        d.nombre AS departamento,
+        GROUP_CONCAT(DISTINCT asig.nombre ORDER BY asig.nombre SEPARATOR ', ') AS asignaturas
+      FROM profesores pr
+      INNER JOIN personas p ON p.id = pr.id
+      LEFT JOIN departamentos d ON d.id = pr.departamento_id
+      LEFT JOIN grupo_asignatura ga ON ga.profesor_id = pr.id
+      LEFT JOIN asignaturas asig ON asig.id = ga.asignatura_id
+      WHERE pr.id = ?
+      GROUP BY pr.id, p.nombre, p.apellidos, p.email, d.nombre
+      `,
+      [id]
+    );
 
-export const deleteProfesor = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  profesores = profesores.filter(p => p.id !== parseInt(id));
-  res.json({ message: 'Profesor eliminado' });
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Profesor no encontrado" });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("Error al obtener profesor:", error);
+    res.status(500).json({ error: "Error al obtener profesor" });
+  }
 };

@@ -13,6 +13,19 @@ export interface Calificacion {
   evaluacion: Evaluacion;
   nota: number; // 0..10
   observaciones?: string;
+  // Objetos anidados opcionales que vienen de la API
+  alumno?: {
+    id: number;
+    nia?: string;
+    nombre?: string;
+    apellidos?: string;
+  };
+  asignatura?: {
+    id: number;
+    nombre?: string;
+    codigo?: string;
+    curso?: string;
+  };
 }
 
 @Injectable({ providedIn: 'root' })

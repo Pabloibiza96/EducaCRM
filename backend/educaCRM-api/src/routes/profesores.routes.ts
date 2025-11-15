@@ -1,11 +1,9 @@
-import { Router } from 'express';
-import { getProfesores, addProfesor, updateProfesor, deleteProfesor } from '../controllers/profesores.controller.js';
+import { Router } from "express";
+import { getProfesores, getProfesorById } from "../controllers/profesores.controller.js";
 
 const router = Router();
 
-router.get('/', getProfesores);
-router.post('/', addProfesor);
-router.put('/:id', updateProfesor);
-router.delete('/:id', deleteProfesor);
+router.get("/", getProfesores);
+router.get("/:id", getProfesorById);
 
 export default router;
