@@ -1,7 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProfesoresService, Profesor } from '../../../core/services/profesores.service';
+
+import { ProfesoresService, Profesor, ProfesorPayload } from '../../../core/services/profesores.service';
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
 import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
@@ -11,7 +12,7 @@ import { RoleService } from '../../../core/auth/role.service';
   selector: 'app-profesores-list',
   standalone: true,
   imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
-  templateUrl: './profesores-list.html',
+  templateUrl: './profesores-list.html'
 })
 export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
   @ViewChild('modalProfesor') modalProfesor!: GenericModalComponent;
@@ -28,25 +29,20 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
     },
     { key: 'departamento', header: 'Departamento' },
     { key: 'email', header: 'Email' },
-    { 
-      key: 'asignaturas',
-      header: 'Asignaturas',
-      formatter: (val) => val || '—'
-    }
   ];
 
   actions: ActionButton<Profesor>[] = [
     {
-      label: 'Editar',
+      icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (p) => this.editar(p),
-      hidden: () => !this.roleService.canEdit('profesores')
+      tooltip: 'Editar',
+      onClick: (p) => this.abrirModal(false, p)
     },
     {
-      label: 'Eliminar',
+      icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (p) => this.eliminar(p.id),
-      hidden: () => !this.roleService.canDelete('profesores')
+      tooltip: 'Eliminar',
+      onClick: (p) => this.eliminar(p.id)
     }
   ];
 
@@ -54,24 +50,55 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
     public profesoresService: ProfesoresService,
     public roleService: RoleService
   ) {
-    super(profesoresService, { id: 0, nombre: '', apellidos: '', email: '', departamento: '', asignaturas: '' });
+    super(profesoresService, {
+      id: 0,
+      nombre: '',
+      apellidos: '',
+      email: null,
+      departamento: null,
+    });
   }
 
   override ngOnInit(): void {
     this.profesoresService.load();
   }
 
-  protected override getSearchFields(profesor: Profesor): string[] {
+  protected override getSearchFields(p: Profesor): string[] {
     return [
-      profesor.nombre,
-      profesor.apellidos,
-      profesor.email,
-      profesor.departamento,
-      profesor.asignaturas || ''
+      p.nombre ?? '',
+      p.apellidos ?? '',
+      p.email ?? '',
+      p.departamento ?? '',
     ];
   }
 
   protected override getDeleteConfirmMessage(): string {
     return '¿Eliminar profesor?';
+  }
+
+  private buildPayload(): ProfesorPayload {
+    return {
+      nombre: this.actual.nombre,
+      apellidos: this.actual.apellidos,
+      email: this.actual.email,
+      departamento: this.actual.departamento,
+    };
+  }
+
+  override guardar(): void {
+    const payload = this.buildPayload();
+
+    if (this.modoEdicion) {
+      this.profesoresService.updateProfesor(this.actual.id, payload);
+    } else {
+      this.profesoresService.createProfesor(payload);
+    }
+
+    this.modalProfesor.close();
+  }
+
+  override eliminar(id: number): void {
+    if (!confirm(this.getDeleteConfirmMessage())) return;
+    this.profesoresService.deleteProfesor(id);
   }
 }
