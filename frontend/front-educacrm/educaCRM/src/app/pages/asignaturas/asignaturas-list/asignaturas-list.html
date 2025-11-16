@@ -17,25 +17,48 @@
   <app-crud-table
     [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions">
+    [actions]="actions"
+    emptyMessage="No hay asignaturas registradas">
   </app-crud-table>
 
+  <!-- Modal -->
   <app-generic-modal
     #modalAsignatura
-    [title]="modoEdicion ? 'Editar Asignatura' : 'Nueva Asignatura'"
-    (onSave)="guardar()">
-    <form #formAsignatura="ngForm">
+    [title]="modoEdicion ? 'Editar asignatura' : 'Nueva asignatura'"
+    [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear asignatura'"
+    headerClass="bg-secondary text-white"
+    confirmBtnClass="btn-secondary"
+    (confirm)="guardar()">
+
+    <form>
       <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
+        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.nombre"
+          name="nombre"
+          required>
       </div>
+
       <div class="mb-3">
-        <label for="codigo" class="form-label">Código</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.codigo" name="codigo" required>
+        <label class="form-label">Código <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.codigo"
+          name="codigo"
+          required>
       </div>
+
       <div class="mb-3">
-        <label for="curso" class="form-label">Curso</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.curso" name="curso" required>
+        <label class="form-label">Curso</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.curso"
+          name="curso"
+          placeholder="Ej: 1º ESO, 2º DAW…">
       </div>
     </form>
   </app-generic-modal>

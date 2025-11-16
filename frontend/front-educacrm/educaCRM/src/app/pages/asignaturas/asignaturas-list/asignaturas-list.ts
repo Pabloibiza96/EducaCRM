@@ -1,16 +1,30 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AsignaturasService, Asignatura } from '../../../core/services/asignaturas.service';
+
+import {
+  AsignaturasService,
+  Asignatura,
+  AsignaturaPayload,
+} from '../../../core/services/asignaturas.service';
 import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import {
+  CrudTableComponent,
+  TableColumn,
+  ActionButton,
+} from '../../../shared/components/crud-table/crud-table.component';
 import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
-import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
 import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
-  selector: 'app-asignaturas-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  selector: 'app-asignaturas-list',
+  imports: [
+    CommonModule,
+    FormsModule,
+    GenericModalComponent,
+    CrudTableComponent,
+  ],
   templateUrl: './asignaturas-list.html',
 })
 export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> {
@@ -20,54 +34,77 @@ export class AsignaturasListComponent extends BaseCrudListComponent<Asignatura> 
     return this.modalAsignatura;
   }
 
+  // Columnas de la tabla
   columns: TableColumn<Asignatura>[] = [
     { key: 'id', header: 'ID', width: '80px' },
-    { key: 'codigo', header: 'Código', width: '120px' },
-    { key: 'nombre', header: 'Asignatura' },
+    { key: 'nombre', header: 'Nombre' },
+    { key: 'codigo', header: 'Código' },
     { key: 'curso', header: 'Curso' },
-    { 
-      key: 'profesor',
-      header: 'Profesor',
-      formatter: (val) => val || '—'
-    }
   ];
 
+  // Botones de acción
   actions: ActionButton<Asignatura>[] = [
     {
-      label: 'Editar',
+      icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (a) => this.editar(a),
-      hidden: () => !this.roleService.canEdit('asignaturas')
+      tooltip: 'Editar',
+      onClick: (asig) => this.abrirModal(false, asig),
     },
     {
-      label: 'Eliminar',
+      icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
-      onClick: (a) => this.eliminar(a.id),
-      hidden: () => !this.roleService.canDelete('asignaturas')
-    }
+      tooltip: 'Eliminar',
+      onClick: (asig) => this.eliminar(asig.id),
+    },
   ];
 
   constructor(
-    public asignaturasService: AsignaturasService,
+    public asignaturasSrv: AsignaturasService,
     public roleService: RoleService
   ) {
-    super(asignaturasService, { id: 0, nombre: '', codigo: '', curso: '', profesor: '' });
+    super(asignaturasSrv, {
+      id: 0,
+      nombre: '',
+      codigo: '',
+      curso: null,
+    });
   }
 
   override ngOnInit(): void {
-    this.asignaturasService.load();
+    this.asignaturasSrv.load();
   }
 
-  protected override getSearchFields(asignatura: Asignatura): string[] {
-    return [
-      asignatura.nombre,
-      asignatura.codigo,
-      asignatura.curso,
-      asignatura.profesor || ''
-    ];
+  protected override getSearchFields(a: Asignatura): string[] {
+    return [a.nombre ?? '', a.codigo ?? '', a.curso ?? ''];
   }
 
   protected override getDeleteConfirmMessage(): string {
-    return '¿Eliminar esta asignatura?';
+    return '¿Eliminar asignatura?';
+  }
+
+  /** Construye el payload que espera la API */
+  private buildPayload(): AsignaturaPayload {
+    return {
+      nombre: this.actual.nombre,
+      codigo: this.actual.codigo,
+      curso: this.actual.curso,
+    };
+  }
+
+  override guardar(): void {
+    const payload = this.buildPayload();
+
+    if (this.modoEdicion) {
+      this.asignaturasSrv.updateAsignatura(this.actual.id, payload);
+    } else {
+      this.asignaturasSrv.createAsignatura(payload);
+    }
+
+    this.modalAsignatura.close();
+  }
+
+  override eliminar(id: number): void {
+    if (!confirm(this.getDeleteConfirmMessage())) return;
+    this.asignaturasSrv.deleteAsignatura(id);
   }
 }

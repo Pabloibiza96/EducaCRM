@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
+  Unique,
 } from "typeorm";
 import { Alumno } from "./Alumno.js";
 import { Asignatura } from "./Asignatura.js";
@@ -11,6 +12,7 @@ import { Asignatura } from "./Asignatura.js";
 export type Evaluacion = "1ª" | "2ª" | "3ª" | "Final";
 
 @Entity("calificaciones")
+@Unique(["alumno", "asignatura", "evaluacion"])
 export class Calificacion {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -23,14 +25,11 @@ export class Calificacion {
   @JoinColumn({ name: "asignatura_id" })
   asignatura!: Asignatura;
 
-  @Column({
-    type: "enum",
-    enum: ["1ª", "2ª", "3ª", "Final"],
-  })
+  @Column({ type: "enum", enum: ["1ª", "2ª", "3ª", "Final"] })
   evaluacion!: Evaluacion;
 
   @Column({ type: "decimal", precision: 4, scale: 2, nullable: true })
-  nota!: string | null;
+  nota!: number | null;
 
   @Column({ type: "date", nullable: true })
   fecha!: string | null;

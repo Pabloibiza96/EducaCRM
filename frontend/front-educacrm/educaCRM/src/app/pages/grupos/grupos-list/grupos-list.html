@@ -2,41 +2,70 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Gestión de grupos</h3>
     <div class="d-flex gap-2">
-      <div class="input-group" style="max-width: 320px;">
+      <div class="input-group" style="max-width: 320px">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input class="form-control" placeholder="Buscar grupo…" [(ngModel)]="q">
+        <input
+          class="form-control"
+          placeholder="Buscar grupo…"
+          [(ngModel)]="q"
+        />
       </div>
+
       @if (roleService.canCreate('grupos')) {
-        <button class="btn btn-success" (click)="abrirModal(true)">
-          <i class="bi bi-plus-lg"></i> Nuevo grupo
-        </button>
+      <button class="btn btn-success" (click)="abrirModal(true)">
+        <i class="bi bi-plus-lg"></i> Nuevo grupo
+      </button>
       }
     </div>
   </div>
 
+  <!-- Tabla genérica -->
   <app-crud-table
     [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions">
+    [actions]="actions"
+    emptyMessage="No hay grupos registrados"
+  >
   </app-crud-table>
-
-  <app-generic-modal
-    #modalGrupo
-    [title]="modoEdicion ? 'Editar Grupo' : 'Nuevo Grupo'"
-    (onSave)="guardar()">
-    <form #formGrupo="ngForm">
-      <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.nombre" name="nombre" required>
-      </div>
-      <div class="mb-3">
-        <label for="curso" class="form-label">Curso</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.curso" name="curso" required>
-      </div>
-      <div class="mb-3">
-        <label for="tutor" class="form-label">Tutor</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.tutor" name="tutor" required>
-      </div>
-    </form>
-  </app-generic-modal>
 </div>
+
+<!-- Modal -->
+<app-generic-modal
+  #modalGrupo
+  [title]="modoEdicion ? 'Editar grupo' : 'Nuevo grupo'"
+  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear grupo'"
+  headerClass="bg-secondary text-white"
+  confirmBtnClass="btn-secondary"
+  (confirm)="guardar()"
+>
+  <form (ngSubmit)="guardar()">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label"
+          >Nombre del grupo <span class="text-danger">*</span></label
+        >
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.nombre"
+          name="nombre"
+          required
+        />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label"
+          >Curso <span class="text-danger">*</span></label
+        >
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.curso"
+          name="curso"
+          required
+          placeholder="Ej: 1º ESO, 2º DAW"
+        />
+      </div>
+    </div>
+  </form>
+</app-generic-modal>

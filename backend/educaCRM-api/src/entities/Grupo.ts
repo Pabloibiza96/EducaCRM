@@ -17,5 +17,5 @@ export class Grupo {
   matriculas!: Matricula[];
 
   @OneToMany(() => GrupoAsignatura, (ga) => ga.grupo)
-  grupoAsignaturas!: GrupoAsignatura[];
+  gruposAsignaturas!: GrupoAsignatura[];
 }

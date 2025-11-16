@@ -1,42 +1,72 @@
-import type { Request, Response } from 'express';
+import { Request, Response } from "express";
+import { AppDataSource } from "../data-source.js";
+import { Grupo } from "../entities/Grupo.js";
 
-interface Grupo {
-  id: number;
-  nombre: string;
-  curso: string;
-  tutor: string;
-  numAlumnos?: number;
-}
+const repo = () => AppDataSource.getRepository(Grupo);
 
-let grupos: Grupo[] = [
-  { id: 1, nombre: '1º ESO A', curso: '2024-2025', tutor: 'Carlos Martínez', numAlumnos: 25 },
-  { id: 2, nombre: '1º ESO B', curso: '2024-2025', tutor: 'Laura Sánchez', numAlumnos: 23 },
-  { id: 3, nombre: '2º ESO A', curso: '2024-2025', tutor: 'Pedro Gómez', numAlumnos: 27 },
-  { id: 4, nombre: '2º ESO B', curso: '2024-2025', tutor: 'Ana López', numAlumnos: 24 },
-];
-
-export const getGrupos = (_req: Request, res: Response) => {
-  res.json(grupos);
+export const getGrupos = async (_req: Request, res: Response) => {
+  try {
+    const grupos = await repo().find();
+    res.json(grupos);
+  } catch (err) {
+    console.error("Error listando grupos", err);
+    res.status(500).json({ message: "Error obteniendo grupos" });
+  }
 };
 
-export const addGrupo = (req: Request, res: Response) => {
-  const nuevo = { id: grupos.length + 1, ...req.body };
-  grupos.push(nuevo);
-  res.status(201).json(nuevo);
+export const createGrupo = async (req: Request, res: Response) => {
+  try {
+    const { nombre, curso } = req.body;
+
+    if (!nombre || !curso) {
+      return res
+        .status(400)
+        .json({ message: "Nombre y curso son obligatorios" });
+    }
+
+    const grupo = repo().create({ nombre, curso });
+    const saved = await repo().save(grupo);
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error("Error creando grupo", err);
+    res.status(500).json({ message: "Error creando grupo" });
+  }
 };
 
-export const updateGrupo = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  const index = grupos.findIndex(g => g.id === parseInt(id));
-  if (index === -1) return res.status(404).json({ message: 'Grupo no encontrado' });
-  grupos[index] = { ...grupos[index], ...req.body };
-  res.json(grupos[index]);
+export const updateGrupo = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const repoG = repo();
+
+    const grupo = await repoG.findOneBy({ id });
+    if (!grupo) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    const { nombre, curso } = req.body;
+    grupo.nombre = nombre ?? grupo.nombre;
+    grupo.curso = curso ?? grupo.curso;
+
+    const updated = await repoG.save(grupo);
+    res.json(updated);
+  } catch (err) {
+    console.error("Error actualizando grupo", err);
+    res.status(500).json({ message: "Error actualizando grupo" });
+  }
 };
 
-export const deleteGrupo = (req: Request, res: Response) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).json({ message: 'ID requerido' });
-  grupos = grupos.filter(g => g.id !== parseInt(id));
-  res.json({ message: 'Grupo eliminado' });
+export const deleteGrupo = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const result = await repo().delete(id);
+
+    if (!result.affected) {
+      return res.status(404).json({ message: "Grupo no encontrado" });
+    }
+
+    res.status(204).send();
+  } catch (err) {
+    console.error("Error eliminando grupo", err);
+    res.status(500).json({ message: "Error eliminando grupo" });
+  }
 };

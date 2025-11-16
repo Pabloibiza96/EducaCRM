@@ -1,22 +1,24 @@
-import { Component, computed, ViewChild, TemplateRef } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import {
   CalificacionesService,
   Calificacion,
+  CalificacionPayload,
+  Evaluacion,
 } from '../../../core/services/calificaciones.service';
 import { AlumnosService } from '../../../core/services/alumnos.service';
 import { AsignaturasService } from '../../../core/services/asignaturas.service';
-import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
-import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
-import { CrudTableComponent, TableColumn, ActionButton } from '../../../shared/components/crud-table/crud-table.component';
-import { RoleService } from '../../../core/auth/role.service';
-import { AuthService } from '../../../core/auth/auth.service';
 
-interface CalificacionView extends Calificacion {
-  alumnoNombre: string;
-  asignaturaNombre: string;
-}
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
+import {
+  CrudTableComponent,
+  TableColumn,
+  ActionButton,
+} from '../../../shared/components/crud-table/crud-table.component';
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   standalone: true,
@@ -31,128 +33,70 @@ interface CalificacionView extends Calificacion {
 })
 export class CalificacionesListComponent extends BaseCrudListComponent<Calificacion> {
   @ViewChild('modalCalificacion') modalCalificacion!: GenericModalComponent;
-  @ViewChild('evaluacionBadgeTpl', { static: true }) evaluacionBadgeTpl!: TemplateRef<any>;
-  @ViewChild('notaTpl', { static: true }) notaTpl!: TemplateRef<any>;
 
   protected get modal(): GenericModalComponent {
     return this.modalCalificacion;
   }
 
-  evaluaciones = ['1ª', '2ª', '3ª', 'Extraordinaria'];
+  evaluaciones: Evaluacion[] = ['1ª', '2ª', '3ª', 'Final'];
 
-  view = computed(() => {
-    const cals = this.filtrados() as Calificacion[];
-    const user = this.authService.currentUser();
+  columns: TableColumn<Calificacion>[] = [
+    { key: 'id', header: 'ID', width: '60px' },
+    { key: 'alumnoNombre', header: 'Alumno' },
+    { key: 'asignaturaNombre', header: 'Asignatura' },
+    { key: 'evaluacion', header: 'Evaluación', width: '100px' },
+    {
+      header: 'Nota',
+      width: '80px',
+      valueGetter: (c) => (c.nota != null ? c.nota.toFixed(2) : '—'),
+    },
+  ];
 
-    // Si es alumno, filtrar solo sus calificaciones
-    const filteredCals = this.roleService.isAlumno()
-      ? cals.filter(c => c.alumnoId === user?.id)
-      : cals;  // Otros roles ven todas
-
-    const alumnos = this.alumnosService.items();
-    const asignaturas = this.asignaturasService.items();
-
-    return filteredCals.map((c): CalificacionView => {
-      let alumnoNombre = '—';
-      const al = alumnos.find((a) => a.id === c.alumnoId);
-      if (al) {
-        alumnoNombre = al.nombre && al.apellidos ? `${al.nombre} ${al.apellidos}` : al.nombre || al.apellidos || '—';
-      } else if (c.alumno) {
-        alumnoNombre = c.alumno.nia || String(c.alumno.id) || '—';
-      }
-
-      let asignaturaNombre = '—';
-      const as = asignaturas.find((x) => x.id === c.asignaturaId);
-      if (as) {
-        asignaturaNombre = as.nombre || '—';
-      } else if (c.asignatura) {
-        asignaturaNombre = c.asignatura.nombre || c.asignatura.codigo || '—';
-      }
-
-      return {
-        ...c,
-        alumnoNombre,
-        asignaturaNombre,
-      };
-    });
-  });
-
-  columns!: TableColumn<CalificacionView>[];
-
-  actions: ActionButton<CalificacionView>[] = [
+  actions: ActionButton<Calificacion>[] = [
     {
       icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
-      onClick: (c) => this.editar(c),
-      hidden: () => !this.roleService.canEdit('calificaciones')
+      tooltip: 'Editar',
+      onClick: (c) => this.abrirModal(false, c),
     },
     {
       icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
+      tooltip: 'Eliminar',
       onClick: (c) => this.eliminar(c.id),
-      hidden: () => !this.roleService.canDelete('calificaciones')
-    }
+    },
   ];
 
   constructor(
-    public srv: CalificacionesService,
-    public alumnosService: AlumnosService,
-    public asignaturasService: AsignaturasService,
-    public roleService: RoleService,
-    private authService: AuthService
+    public calificacionesSrv: CalificacionesService,
+    public alumnosSrv: AlumnosService,
+    public asignaturasSrv: AsignaturasService,
+    public roleService: RoleService
   ) {
-    super(srv, {
+    super(calificacionesSrv, {
       id: 0,
       alumnoId: 0,
       asignaturaId: 0,
+      alumnoNombre: '',
+      asignaturaNombre: '',
       evaluacion: '1ª',
-      nota: 5,
+      nota: null,
+      fecha: null,
     });
   }
 
   override ngOnInit(): void {
-    // Cargar datos de forma coordinada para evitar race conditions
-    this.srv.loadWithDependencies().subscribe({
-      next: ({ alumnos, asignaturas, calificaciones }) => {
-        this.alumnosService.setAll(alumnos as any);
-        this.asignaturasService.setAll(asignaturas as any);
-        this.srv.setAll(calificaciones);
-      }
-    });
-    
-    this.columns = [
-      { 
-        key: 'alumnoNombre',
-        header: 'Alumno'
-      },
-      { 
-        key: 'asignaturaNombre',
-        header: 'Asignatura'
-      },
-      {
-        key: 'evaluacion',
-        header: 'Evaluación',
-        template: this.evaluacionBadgeTpl
-      },
-      {
-        key: 'nota',
-        header: 'Nota',
-        template: this.notaTpl
-      }
-    ];
+    this.calificacionesSrv.load();
+    this.alumnosSrv.load();
+    this.asignaturasSrv.load();
   }
 
-  protected override getSearchFields(cal: Calificacion): string[] {
-    const alumnos = this.alumnosService.items();
-    const asignaturas = this.asignaturasService.items();
-    const al = alumnos.find((a) => a.id === cal.alumnoId);
-    const as = asignaturas.find((x) => x.id === cal.asignaturaId);
+  protected override getSearchFields(c: Calificacion): string[] {
     return [
-      al ? al.nombre : '',
-      al ? al.apellidos : '',
-      as ? as.nombre : '',
-      cal.evaluacion,
-      cal.nota.toString(),
+      c.alumnoNombre ?? '',
+      c.asignaturaNombre ?? '',
+      c.evaluacion ?? '',
+      c.nota != null ? c.nota.toString() : '',
     ];
   }
 
@@ -160,13 +104,46 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
     return '¿Eliminar calificación?';
   }
 
-  getEvaluacionBadgeClass(evaluacion: string): string {
-    const classes: Record<string, string> = {
-      '1ª': 'bg-primary',
-      '2ª': 'bg-info',
-      '3ª': 'bg-warning',
-      'Extraordinaria': 'bg-dark'
+  /** Mapea los datos del formulario al payload de la API */
+  private buildPayload(): CalificacionPayload {
+    const notaNum =
+      this.actual.nota !== null && this.actual.nota !== undefined
+        ? Number(this.actual.nota)
+        : null;
+
+    return {
+      alumnoId: this.actual.alumnoId,
+      asignaturaId: this.actual.asignaturaId,
+      evaluacion: this.actual.evaluacion,
+      nota: notaNum,
+      fecha: this.actual.fecha,
     };
-    return classes[evaluacion] || 'bg-secondary';
+  }
+
+  override guardar(): void {
+    const payload = this.buildPayload();
+
+    if (this.modoEdicion) {
+      this.calificacionesSrv.updateCalificacion(this.actual.id, payload);
+    } else {
+      this.calificacionesSrv.createCalificacion(payload);
+    }
+
+    this.modalCalificacion.close();
+  }
+
+  override eliminar(id: number): void {
+    if (!confirm(this.getDeleteConfirmMessage())) return;
+    this.calificacionesSrv.deleteCalificacion(id);
+  }
+
+  override abrirModal(nuevo = true, item?: Calificacion): void {
+    this.modoEdicion = !nuevo;
+    if (nuevo) {
+      this.actual = { ...this.emptyEntity };
+    } else if (item) {
+      this.actual = { ...item };
+    }
+    this.modal.open();
   }
 }

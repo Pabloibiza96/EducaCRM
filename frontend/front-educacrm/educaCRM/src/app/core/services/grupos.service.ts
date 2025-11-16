@@ -1,50 +1,57 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
 import { BaseCrudService } from './base-crud.service';
-import { NotificationService } from './notification.service';
 
 export interface Grupo {
   id: number;
   nombre: string;
   curso: string;
-  tutor: string;
-  numAlumnos?: number;
+}
+
+export interface GrupoPayload {
+  nombre: string;
+  curso: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class GruposService extends BaseCrudService<Grupo> {
+  private baseUrl = '/api/grupos';
 
-  constructor(
-    private http: HttpClient,
-    private notifications: NotificationService
-  ) {
+  constructor(private http: HttpClient) {
     super();
   }
 
-  /**
-   * Carga los grupos desde el backend.
-   * Usa el proxy de Angular para redirigir a http://localhost:3000/api/grupos.
-   */
-  load() {
-    this.http.get<Grupo[]>('/api/grupos').pipe(
-      catchError(err => {
-        console.error('❌ Error cargando grupos:', err);
-        this.notifications.error('Error al cargar los grupos. Intenta de nuevo.');
-        return of([]);
-      })
-    ).subscribe({
-      next: (data) => {
-        this.setAll(data);
-        if (data.length > 0) {
-          this.notifications.success(`${data.length} grupos cargados correctamente`);
-        }
-      }
+  load(): void {
+    this.http.get<Grupo[]>(this.baseUrl).subscribe({
+      next: (data) => this.setAll(data),
+      error: (err) => console.error('Error cargando grupos', err),
     });
   }
 
-  // Alias para mantener compatibilidad con código existente
-  get grupos() {
-    return this.items;
+  createGrupo(payload: GrupoPayload): void {
+    this.http.post<Grupo>(this.baseUrl, payload).subscribe({
+      next: (created) => {
+        this.setAll([...this.items(), created]);
+      },
+      error: (err) => console.error('Error creando grupo', err),
+    });
+  }
+
+  updateGrupo(id: number, payload: GrupoPayload): void {
+    this.http.put<Grupo>(`${this.baseUrl}/${id}`, payload).subscribe({
+      next: (updated) => {
+        this.setAll(this.items().map((g) => (g.id === id ? updated : g)));
+      },
+      error: (err) => console.error('Error actualizando grupo', err),
+    });
+  }
+
+  deleteGrupo(id: number): void {
+    this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe({
+      next: () => {
+        this.setAll(this.items().filter((g) => g.id !== id));
+      },
+      error: (err) => console.error('Error eliminando grupo', err),
+    });
   }
 }

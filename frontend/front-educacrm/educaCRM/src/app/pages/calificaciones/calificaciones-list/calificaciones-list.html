@@ -2,50 +2,133 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Gestión de calificaciones</h3>
     <div class="d-flex gap-2">
-      <div class="input-group" style="max-width: 320px;">
+      <div class="input-group" style="max-width: 320px">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input class="form-control" placeholder="Buscar calificación…" [(ngModel)]="q">
+        <input class="form-control" placeholder="Buscar…" [(ngModel)]="q" />
       </div>
+
       @if (roleService.canCreate('calificaciones')) {
-        <button class="btn btn-success" (click)="abrirModal(true)">
-          <i class="bi bi-plus-lg"></i> Nueva calificación
-        </button>
+      <button class="btn btn-success" (click)="abrirModal(true)">
+        <i class="bi bi-plus-lg"></i> Nueva calificación
+      </button>
       }
     </div>
   </div>
 
   <app-crud-table
-    [data]="view()"
+    [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions">
+    [actions]="actions"
+    emptyMessage="No hay calificaciones registradas"
+  >
   </app-crud-table>
-
-  <app-generic-modal
-    #modalCalificacion
-    [title]="modoEdicion ? 'Editar Calificación' : 'Nueva Calificación'"
-    (onSave)="guardar()">
-    <form #formCalificacion="ngForm">
-      <div class="mb-3">
-        <label for="alumnoId" class="form-label">ID Alumno</label>
-        <input type="number" class="form-control" [(ngModel)]="actual.alumnoId" name="alumnoId" required>
-      </div>
-      <div class="mb-3">
-        <label for="asignaturaId" class="form-label">ID Asignatura</label>
-        <input type="number" class="form-control" [(ngModel)]="actual.asignaturaId" name="asignaturaId" required>
-      </div>
-      <div class="mb-3">
-        <label for="nota" class="form-label">Nota</label>
-        <input type="number" class="form-control" [(ngModel)]="actual.nota" name="nota" required min="0" max="10" step="0.1">
-      </div>
-      <div class="mb-3">
-        <label for="evaluacion" class="form-label">Evaluación</label>
-        <select class="form-select" [(ngModel)]="actual.evaluacion" name="evaluacion" required>
-          <option value="Primera">Primera</option>
-          <option value="Segunda">Segunda</option>
-          <option value="Tercera">Tercera</option>
-          <option value="Final">Final</option>
-        </select>
-      </div>
-    </form>
-  </app-generic-modal>
 </div>
+
+<app-generic-modal
+  #modalCalificacion
+  [title]="modoEdicion ? 'Editar calificación' : 'Nueva calificación'"
+  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear calificación'"
+  headerClass="bg-success text-white"
+  confirmBtnClass="btn-success"
+  (confirm)="guardar()">
+
+  <form #formCalificacion="ngForm" (ngSubmit)="guardar()">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label"
+          >Alumno <span class="text-danger">*</span></label
+        >
+        <select
+          class="form-select"
+          [(ngModel)]="actual.alumnoId"
+          name="alumnoId"
+          required
+          #alumnoId="ngModel"
+          [class.is-invalid]="alumnoId.invalid && alumnoId.touched"
+        >
+          <option [ngValue]="0" disabled>Selecciona alumno…</option>
+          @for (al of alumnosSrv.items(); track al.id) {
+          <option [ngValue]="al.id">{{ al.nombre }} {{ al.apellidos }}</option>
+          }
+        </select>
+        @if (alumnoId.invalid && alumnoId.touched) {
+        <div class="invalid-feedback">El alumno es obligatorio</div>
+        }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label"
+          >Asignatura <span class="text-danger">*</span></label
+        >
+        <select
+          class="form-select"
+          [(ngModel)]="actual.asignaturaId"
+          name="asignaturaId"
+          required
+          #asignaturaId="ngModel"
+          [class.is-invalid]="asignaturaId.invalid && asignaturaId.touched"
+        >
+          <option [ngValue]="0" disabled>Selecciona asignatura…</option>
+          @@for (asig of asignaturasSrv.items(); track asig.id) {
+          <option [ngValue]="asig.id">{{ asig.nombre }}</option>
+          }
+        </select>
+        @if (asignaturaId.invalid && asignaturaId.touched) {
+        <div class="invalid-feedback">La asignatura es obligatoria</div>
+        }
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label"
+          >Evaluación <span class="text-danger">*</span></label
+        >
+        <select
+          class="form-select"
+          [(ngModel)]="actual.evaluacion"
+          name="evaluacion"
+          required
+          #evaluacion="ngModel"
+          [class.is-invalid]="evaluacion.invalid && evaluacion.touched"
+        >
+          @for (ev of evaluaciones; track ev) {
+          <option [ngValue]="ev">{{ ev }}</option>
+          }
+        </select>
+        @if (evaluacion.invalid && evaluacion.touched) {
+        <div class="invalid-feedback">La evaluación es obligatoria</div>
+        }
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label"
+          >Nota <span class="text-danger">*</span></label
+        >
+        <input
+          type="number"
+          class="form-control"
+          [(ngModel)]="actual.nota"
+          name="nota"
+          required
+          min="0"
+          max="10"
+          step="0.25"
+          #nota="ngModel"
+          [class.is-invalid]="nota.invalid && nota.touched"
+        />
+        @if (nota.invalid && nota.touched) {
+        <div class="invalid-feedback">La nota debe estar entre 0 y 10</div>
+        }
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Fecha</label>
+        <input
+          type="date"
+          class="form-control"
+          [(ngModel)]="actual.fecha"
+          name="fecha"
+        />
+      </div>
+    </div>
+  </form>
+</app-generic-modal>
