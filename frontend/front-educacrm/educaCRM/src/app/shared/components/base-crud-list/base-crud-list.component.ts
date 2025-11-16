@@ -121,13 +121,22 @@ export abstract class BaseCrudListComponent<T extends { id: number }> implements
    * @param nuevo - true para crear nueva entidad, false para editar existente
    * @param item - La entidad a editar (opcional, solo si nuevo = false)
    */
-  abrirModal(nuevo = true, item?: T): void {
-    this.modoEdicion = !nuevo;
-    this.actual = nuevo
-      ? { ...this.emptyEntity }
-      : { ...item! };
-    this.modal.open();
+  abrirModal(nuevo = true, item?: T | null): void {
+  this.modoEdicion = !nuevo;
+
+  if (nuevo) {
+    // Crear nuevo → usamos la entidad vacía
+    this.actual = { ...this.emptyEntity };
+  } else if (item) {
+    // Editar → clonamos el item recibido
+    this.actual = { ...item };
+  } else {
+    // Por si alguien llama editar sin item, evitamos petar
+    this.actual = { ...this.emptyEntity };
   }
+
+  this.modal.open();
+}
 
   /**
    * Alias de abrirModal(false, item) para mejor legibilidad.

@@ -9,11 +9,10 @@ import {
 } from "typeorm";
 import { Persona } from "./Persona.js";
 import { Departamento } from "./Departamento.js";
-import { GrupoAsignatura } from "./GrupoAsignatura.js";
+import { GrupoAsignatura } from "./GrupoAsignatura.js"; 
 
 @Entity("profesores")
 export class Profesor {
-  // PK que es a la vez FK a personas.id
   @PrimaryColumn({ type: "int" })
   id!: number;
 
@@ -25,12 +24,12 @@ export class Profesor {
   fechaAlta!: string | null;
 
   @ManyToOne(() => Departamento, (d) => d.profesores, {
-    eager: true,
     nullable: true,
+    eager: true,        
   })
   @JoinColumn({ name: "departamento_id" })
   departamento!: Departamento | null;
 
   @OneToMany(() => GrupoAsignatura, (ga) => ga.profesor)
-  grupoAsignaturas!: GrupoAsignatura[];
+  gruposAsignados!: GrupoAsignatura[];
 }

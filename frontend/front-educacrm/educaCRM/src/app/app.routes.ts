@@ -28,7 +28,14 @@ export const routes: Routes = [
           ),
         title: 'Alumnos | EducaCRM',
         canActivate: [roleGuard],
-        data: { roles: ['profesor', 'jefatura', 'direccion', 'administrador'] as Role[] },
+        data: {
+          roles: [
+            'profesor',
+            'jefatura',
+            'direccion',
+            'administrador',
+          ] as Role[],
+        },
       },
 
       {
@@ -50,7 +57,14 @@ export const routes: Routes = [
           ),
         title: 'Grupos | EducaCRM',
         canActivate: [roleGuard],
-        data: { roles: ['profesor', 'jefatura', 'direccion', 'administrador'] as Role[] },
+        data: {
+          roles: [
+            'profesor',
+            'jefatura',
+            'direccion',
+            'administrador',
+          ] as Role[],
+        },
       },
 
       {
@@ -67,12 +81,29 @@ export const routes: Routes = [
       {
         path: 'calificaciones',
         loadComponent: () =>
-          import('./pages/calificaciones/calificaciones-list/calificaciones-list').then(
-            (m) => m.CalificacionesListComponent
-          ),
+          import(
+            './pages/calificaciones/calificaciones-list/calificaciones-list'
+          ).then((m) => m.CalificacionesListComponent),
         title: 'Calificaciones | EducaCRM',
         canActivate: [roleGuard],
-        data: { roles: ['profesor', 'jefatura', 'direccion', 'administrador'] as Role[] },
+        data: {
+          roles: [
+            'profesor',
+            'jefatura',
+            'direccion',
+            'administrador',
+          ] as Role[],
+        },
+      },
+      {
+        path: 'departamentos',
+        loadComponent: () =>
+          import(
+            './pages/departamentos/departamentos-list/departamentos-list'
+          ).then((m) => m.DepartamentosListComponent),
+        title: 'Departamentos | EducaCRM',
+        canActivate: [roleGuard],
+        data: { roles: ['jefatura', 'direccion', 'administrador'] as Role[] },
       },
 
       {
