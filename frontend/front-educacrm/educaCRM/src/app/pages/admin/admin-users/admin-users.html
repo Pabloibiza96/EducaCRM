@@ -1,11 +1,15 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Administración de usuarios</h3>
+    <h3>Gestión de usuarios</h3>
     <div class="d-flex gap-2">
       <div class="input-group" style="max-width: 320px;">
         <span class="input-group-text"><i class="bi bi-search"></i></span>
-        <input class="form-control" placeholder="Buscar usuario…" [(ngModel)]="q">
+        <input
+          class="form-control"
+          placeholder="Buscar usuario…"
+          [(ngModel)]="q">
       </div>
+
       @if (roleService.canCreate('usuarios')) {
         <button class="btn btn-success" (click)="abrirModal(true)">
           <i class="bi bi-plus-lg"></i> Nuevo usuario
@@ -14,35 +18,96 @@
     </div>
   </div>
 
+  <!-- Tabla de usuarios -->
   <app-crud-table
     [data]="filtrados()"
     [columns]="columns"
-    [actions]="actions">
+    [actions]="actions"
+    emptyMessage="No hay usuarios registrados">
   </app-crud-table>
+</div>
 
-  <app-generic-modal
-    #modalUsuario
-    [title]="modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario'"
-    (onSave)="guardar()">
-    <form #formUsuario="ngForm">
-      <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" [(ngModel)]="actual.username" name="username" required>
+<!-- Modal de creación/edición -->
+<app-generic-modal
+  #modalUsuario
+  [title]="modoEdicion ? 'Editar usuario' : 'Nuevo usuario'"
+  [confirmText]="modoEdicion ? 'Guardar cambios' : 'Crear usuario'"
+  headerClass="bg-dark text-white"
+  confirmBtnClass="btn-dark"
+  (confirm)="guardar()">
+
+  <form #formUsuario="ngForm" (ngSubmit)="guardar()">
+    <div class="row g-3">
+
+      <div class="col-md-6">
+        <label class="form-label">Usuario (login) <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.username"
+          name="username"
+          required
+          minlength="3">
       </div>
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" [(ngModel)]="actual.email" name="email" required>
-      </div>
-      <div class="mb-3">
-        <label for="rol" class="form-label">Rol</label>
-        <select class="form-select" [(ngModel)]="actual.rol" name="rol" required>
-          <option value="administrador">Administrador</option>
-          <option value="direccion">Dirección</option>
-          <option value="jefatura">Jefatura</option>
-          <option value="profesor">Profesor</option>
-          <option value="alumno">Alumno</option>
+
+      <div class="col-md-6">
+        <label class="form-label">Rol <span class="text-danger">*</span></label>
+        <select
+          class="form-select"
+          [(ngModel)]="actual.rol"
+          name="rol"
+          required>
+          @for (r of rolesPosibles; track r) {
+            <option [ngValue]="r">{{ r }}</option>
+          }
         </select>
       </div>
-    </form>
-  </app-generic-modal>
-</div>
+
+      <div class="col-md-6">
+        <label class="form-label">
+          Contraseña
+          @if (!modoEdicion) {
+            <span class="text-danger">*</span>
+          } @else {
+            <small class="text-muted">(dejar en blanco para no cambiar)</small>
+          }
+        </label>
+        <input
+          type="password"
+          class="form-control"
+          [(ngModel)]="actual.password"
+          name="password"
+          [required]="!modoEdicion">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          [(ngModel)]="actual.email"
+          name="email">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.nombre"
+          name="nombre"
+          required>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="actual.apellidos"
+          name="apellidos"
+          required>
+      </div>
+    </div>
+  </form>
+</app-generic-modal>

@@ -1,12 +1,20 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../data-source.js";
 import { Usuario } from "../entities/Usuario.js";
+import bcrypt from "bcryptjs";
 
-const usuariosRepo = AppDataSource.getRepository(Usuario);
+const usuarioRepo = AppDataSource.getRepository(Usuario);
 
-export const login = async (req: Request, res: Response) => {
+/**
+ * POST /api/auth/login
+ * Body: { username: string, password: string }
+ */
+export async function login(req: Request, res: Response) {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body as {
+      username?: string;
+      password?: string;
+    };
 
     if (!username || !password) {
       return res
@@ -14,32 +22,34 @@ export const login = async (req: Request, res: Response) => {
         .json({ message: "Usuario y contraseña son obligatorios" });
     }
 
-    const usuario = await usuariosRepo.findOne({
+    // Buscar usuario por username
+    const user = await usuarioRepo.findOne({
       where: { username },
+      relations: ["persona"],
     });
 
-    if (!usuario) {
+    if (!user) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
 
-    // PARCHE PROVISIONAL:
-    // Mientras en la BD tenga hashes de ejemplo no válidos,
-    // aceptamos la contraseña "admin" para cualquier usuario existente.
-    if (password !== "admin") {
+    // Comparar la contraseña enviada con el hash almacenado
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
       return res.status(401).json({ message: "Credenciales incorrectas" });
     }
 
-    // Respuesta de login (sin JWT de momento)
+    // Respuesta para el front
     return res.json({
-      id: usuario.id,
-      username: usuario.username,
-      rol: usuario.rol,
-      personaId: usuario.personaId,
+      id: user.id,
+      username: user.username,
+      rol: user.rol,
+      personaId: user.persona.id,
+      nombre: user.persona.nombre,
+      apellidos: user.persona.apellidos,
+      email: user.persona.email ?? null,
     });
-  } catch (error) {
-    console.error("Error en login:", error);
-    res
-      .status(500)
-      .json({ message: "Error en el servidor durante el login" });
+  } catch (err) {
+    console.error("Error en login", err);
+    return res.status(500).json({ message: "Error en el login" });
   }
-};
+}
