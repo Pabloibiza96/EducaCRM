@@ -1,29 +1,62 @@
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Router } from '@angular/router';
 
-import { AlumnosService, Alumno, AlumnoPayload } from '../../../core/services/alumnos.service';
-import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
-import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import {
+  AlumnosService,
+  Alumno,
+  AlumnoPayload,
+} from '../../../core/services/alumnos.service';
+
 import {
   CrudTableComponent,
   TableColumn,
   ActionButton,
 } from '../../../shared/components/crud-table/crud-table.component';
+
+import { BaseCrudListComponent } from '../../../shared/components/base-crud-list/base-crud-list.component';
+import { GenericModalComponent } from '../../../shared/components/generic-modal/generic-modal';
 import { RoleService } from '../../../core/auth/role.service';
 
 @Component({
   standalone: true,
   selector: 'app-alumnos-list',
-  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CrudTableComponent,
+    GenericModalComponent,
+  ],
   templateUrl: './alumnos-list.html',
 })
 export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
-
   @ViewChild('modalAlumno') modalAlumno!: GenericModalComponent;
+  @ViewChild('formAlumno') formAlumno!: NgForm;
 
+  constructor(
+    public alumnosSrv: AlumnosService,
+    public roleService: RoleService,
+    private router: Router,
+  ) {
+    super(alumnosSrv, {
+      id: 0,
+      nia: '',
+      fechaAlta: null,
+      nombre: '',
+      apellidos: '',
+      email: null,
+      grupo: null,
+    });
+  }
+
+  /** El modal que usa la clase base */
   protected get modal(): GenericModalComponent {
     return this.modalAlumno;
+  }
+
+  override ngOnInit(): void {
+    this.alumnosSrv.load();
   }
 
   // Columnas de la tabla
@@ -49,29 +82,21 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
       tooltip: 'Eliminar',
       onClick: (alumno) => this.eliminar(alumno.id),
     },
+    {
+      icon: 'bar-chart',
+      btnClass: 'btn-sm btn-outline-secondary',
+      tooltip: 'Ver resumen de notas',
+      onClick: (alumno) => {
+        // Solo algunos roles pueden ver el resumen
+        if (!this.roleService.hasRole('administrador', 'direccion', 'jefatura')) {
+          return;
+        }
+        this.router.navigate(['/reportes/alumnos', alumno.id, 'resumen']);
+      },
+    },
   ];
 
-  constructor(
-    public alumnosSrv: AlumnosService,
-    public roleService: RoleService
-  ) {
-    // Estado inicial del formulario
-    super(alumnosSrv, {
-      id: 0,
-      nia: '',
-      fechaAlta: null,
-      nombre: '',
-      apellidos: '',
-      email: null,
-      grupo: null,
-    });
-  }
-
-  override ngOnInit(): void {
-    this.alumnosSrv.load();
-  }
-
-  // Campos usados para el buscador
+  /** Campos usados para el buscador de la base */
   protected override getSearchFields(a: Alumno): string[] {
     return [
       a.nombre ?? '',
@@ -90,27 +115,54 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     return {
       nombre: this.actual.nombre,
       apellidos: this.actual.apellidos,
-      email: this.actual.email,
-      grupo: this.actual.grupo,
+      email: this.actual.email ?? undefined,
+      grupo: this.actual.grupo ?? undefined,
     };
   }
 
-  /** Sobrescribimos guardar() para usar la API real */
+  override abrirModal(nuevo = true, item?: Alumno): void {
+    this.modoEdicion = !nuevo;
+
+    if (nuevo) {
+      this.actual = {
+        id: 0,
+        nia: '',
+        fechaAlta: null,
+        nombre: '',
+        apellidos: '',
+        email: null,
+        grupo: null,
+      };
+    } else if (item) {
+      this.actual = { ...item };
+    }
+
+    if (this.formAlumno) {
+      this.formAlumno.resetForm(this.actual);
+    }
+
+    this.modal.open();
+  }
+
+  /** Guardar usando la API real */
   override guardar(): void {
+    if (this.formAlumno && !this.formAlumno.valid) {
+      this.formAlumno.form.markAllAsTouched();
+      return;
+    }
+
     const payload = this.buildPayload();
 
     if (this.modoEdicion) {
-      // Editar existente → PUT
       this.alumnosSrv.updateAlumno(this.actual.id, payload);
     } else {
-      // Crear nuevo → POST
       this.alumnosSrv.createAlumno(payload);
     }
 
-    this.modalAlumno.close();
+    this.modal.close();
   }
 
-  /** Sobrescribimos eliminar() para usar la API real */
+  /** Eliminar usando la API real */
   override eliminar(id: number): void {
     if (!confirm(this.getDeleteConfirmMessage())) return;
     this.alumnosSrv.deleteAlumno(id);

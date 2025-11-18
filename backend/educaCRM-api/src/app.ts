@@ -12,6 +12,7 @@ import gruposRoutes from "./routes/grupos.routes.js";
 import calificacionesRoutes from "./routes/calificaciones.routes.js"; 
 import matriculasRoutes from "./routes/matriculas.routes.js";
 import authRoutes from "./routes/auth.routes.js";   
+import reportesRoutes from "./routes/reportes.routes.js";
 
 const app = express();
 const PORT = 3000;
@@ -29,6 +30,7 @@ app.use("/api/grupos", gruposRoutes);
 app.use("/api/calificaciones", calificacionesRoutes);
 app.use("/api/matriculas", matriculasRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/reportes", reportesRoutes);
 
 // Inicializar TypeORM y luego arrancar el servidor
 AppDataSource.initialize()

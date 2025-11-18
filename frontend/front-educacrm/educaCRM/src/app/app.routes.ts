@@ -4,6 +4,7 @@ import { LoginComponent } from './pages/login/login';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
 import { Role } from './core/auth/auth.service';
+import { AlumnosMediasComponent } from './pages/reportes/alumnos-medias/alumnos-medias';
 
 export const routes: Routes = [
   // Pública
@@ -115,6 +116,17 @@ export const routes: Routes = [
         title: 'Admin | EducaCRM',
         canActivate: [roleGuard],
         data: { roles: ['administrador'] as Role[] },
+      },
+      {
+        path: 'reportes/alumnos-medias',
+        component: AlumnosMediasComponent,
+      },
+      {
+        path: 'reportes/alumnos/:id/resumen',
+        loadComponent: () =>
+          import('./pages/reportes/alumno-resumen/alumno-resumen').then(
+            (m) => m.AlumnoResumenComponent
+          ),
       },
     ],
   },

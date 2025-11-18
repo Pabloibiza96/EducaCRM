@@ -1,0 +1,109 @@
+@if (cargando) {
+<div class="container my-4">
+  <p>Cargando resumen del alumno…</p>
+</div>
+} @if (!cargando && error) {
+<div class="container my-4">
+  <div class="alert alert-danger mb-3">
+    {{ error }}
+  </div>
+  <button class="btn btn-outline-secondary" (click)="volverAReportes()">
+    ← Volver a reportes
+  </button>
+</div>
+}
+
+<!-- Contenido principal -->
+@if (!cargando && !error && resumen) {
+<div class="container my-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mb-0">
+        Resumen de calificaciones – {{ resumen.alumno.apellidos }},
+        {{ resumen.alumno.nombre }}
+      </h3>
+      <small class="text-muted">
+        Grupo: {{ resumen.alumno.grupo || "—" }}
+      </small>
+    </div>
+
+    <button class="btn btn-outline-secondary" (click)="volverAReportes()">
+      ← Volver a reportes
+    </button>
+  </div>
+
+  <div class="row g-4">
+    <!-- Medias por evaluación -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <strong>Medias por evaluación</strong>
+        </div>
+        <div class="card-body p-0">
+          <table class="table mb-0 table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Evaluación</th>
+                <th class="text-end">Nº calificaciones</th>
+                <th class="text-end">Media</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ev of resumen.mediasPorEvaluacion; track $index) {
+              <tr>
+                <td>{{ ev.evaluacion }}</td>
+                <td class="text-end">{{ ev.numCalificaciones }}</td>
+                <td class="text-end">{{ ev.media | number : "1.2-2" }}</td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="3" class="text-center text-muted py-3">
+                  Sin calificaciones todavía
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medias por asignatura y evaluación -->
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <strong>Medias por asignatura y evaluación</strong>
+        </div>
+        <div class="card-body p-0">
+          <table class="table mb-0 table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Asignatura</th>
+                <th>Evaluación</th>
+                <th class="text-end">Nº calificaciones</th>
+                <th class="text-end">Media</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of resumen.mediasPorAsignatura; track $index) {
+              <tr>
+                <td>{{ m.asignaturaNombre }}</td>
+                <td>{{ m.evaluacion }}</td>
+                <td class="text-end">{{ m.numCalificaciones }}</td>
+                <td class="text-end">{{ m.media | number : "1.2-2" }}</td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="4" class="text-center text-muted py-3">
+                  Sin calificaciones todavía
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+}

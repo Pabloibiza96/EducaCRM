@@ -8,26 +8,85 @@ import { AuthService, Role } from '../../core/auth/auth.service';
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.html',
-  styleUrls: ['./navbar.css']
+  styleUrls: ['./navbar.css'],
 })
 export class NavbarComponent {
   constructor(public auth: AuthService, private router: Router) {}
 
   // Menú filtrado por rol
   links = [
-    { label: 'Inicio',        path: '/',            roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
-    { label: 'Alumnos',       path: '/alumnos',     roles: ['administrador','jefatura'] as Role[] },
-    { label: 'Profesores',    path: '/profesores',  roles: ['administrador','jefatura'] as Role[] },
-    { label: 'Departamentos', path: '/departamentos', roles: ['administrador','jefatura','direccion'] as Role[] },
-    { label: 'Grupos',        path: '/grupos',      roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
-    { label: 'Asignaturas',   path: '/asignaturas', roles: ['alumno','profesor','jefatura','direccion','administrador'] as Role[] },
-    { label: 'Calificaciones',path: '/calificaciones', roles: ['administrador','profesor'] as Role[] },
-    { label: 'Admin',         path: '/admin',       roles: ['administrador','direccion'] as Role[] },
+    {
+      label: 'Inicio',
+      path: '/',
+      roles: [
+        'alumno',
+        'profesor',
+        'jefatura',
+        'direccion',
+        'administrador',
+      ] as Role[],
+    },
+    {
+      label: 'Alumnos',
+      path: '/alumnos',
+      roles: ['administrador', 'jefatura'] as Role[],
+    },
+    {
+      label: 'Profesores',
+      path: '/profesores',
+      roles: ['administrador', 'jefatura'] as Role[],
+    },
+    {
+      label: 'Departamentos',
+      path: '/departamentos',
+      roles: ['administrador', 'jefatura', 'direccion'] as Role[],
+    },
+    {
+      label: 'Grupos',
+      path: '/grupos',
+      roles: [
+        'alumno',
+        'profesor',
+        'jefatura',
+        'direccion',
+        'administrador',
+      ] as Role[],
+    },
+    {
+      label: 'Asignaturas',
+      path: '/asignaturas',
+      roles: [
+        'alumno',
+        'profesor',
+        'jefatura',
+        'direccion',
+        'administrador',
+      ] as Role[],
+    },
+    {
+      label: 'Calificaciones',
+      path: '/calificaciones',
+      roles: ['administrador', 'profesor'] as Role[],
+    },
+    {
+      label: 'Reportes',
+      path: '/reportes/alumnos-medias',
+      roles: ['administrador', 'direccion', 'jefatura'] as Role[],
+    },
+    {
+      label: 'Admin',
+      path: '/admin',
+      roles: ['administrador', 'direccion'] as Role[],
+    },
   ];
 
   canSee = (roles: Role[]) => {
-    const u = this.auth.currentUser(); return !!u && roles.includes(u.rol);
+    const u = this.auth.currentUser();
+    return !!u && roles.includes(u.rol);
   };
 
-  logout() { this.auth.logout(); this.router.navigateByUrl('/login'); }
+  logout() {
+    this.auth.logout();
+    this.router.navigateByUrl('/login');
+  }
 }
