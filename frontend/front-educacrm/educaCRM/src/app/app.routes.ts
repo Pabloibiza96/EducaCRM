@@ -39,6 +39,20 @@ export const routes: Routes = [
         },
       },
 
+      // Detalle de alumno: /alumnos/:id
+      {
+        path: 'alumnos/:id',
+        loadComponent: () =>
+          import('./pages/alumnos/alumno-detalle/alumno-detalle').then(
+            (m) => m.AlumnoDetalleComponent
+          ),
+        title: 'Detalle alumno | EducaCRM',
+        canActivate: [roleGuard],
+        data: {
+          roles: ['administrador', 'jefatura', 'profesor', 'direccion'] as Role[],
+        },
+      },
+
       {
         path: 'profesores',
         loadComponent: () =>
@@ -96,6 +110,7 @@ export const routes: Routes = [
           ] as Role[],
         },
       },
+
       {
         path: 'departamentos',
         loadComponent: () =>
@@ -117,16 +132,24 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['administrador'] as Role[] },
       },
+
       {
         path: 'reportes/alumnos-medias',
         component: AlumnosMediasComponent,
+        title: 'Reportes alumnos | EducaCRM',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'direccion', 'jefatura'] as Role[] },
       },
+
       {
         path: 'reportes/alumnos/:id/resumen',
         loadComponent: () =>
           import('./pages/reportes/alumno-resumen/alumno-resumen').then(
             (m) => m.AlumnoResumenComponent
           ),
+        title: 'Resumen alumno | EducaCRM',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'direccion', 'jefatura', 'profesor'] as Role[] },
       },
     ],
   },

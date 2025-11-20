@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  Unique,
 } from "typeorm";
 import { Alumno } from "./Alumno.js";
 import { Asignatura } from "./Asignatura.js";
@@ -12,7 +11,6 @@ import { Asignatura } from "./Asignatura.js";
 export type Evaluacion = "1ª" | "2ª" | "3ª" | "Final";
 
 @Entity("calificaciones")
-@Unique(["alumno", "asignatura", "evaluacion"])
 export class Calificacion {
   @PrimaryGeneratedColumn()
   id!: number;

@@ -37,7 +37,7 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
   constructor(
     public alumnosSrv: AlumnosService,
     public roleService: RoleService,
-    private router: Router,
+    private router: Router
   ) {
     super(alumnosSrv, {
       id: 0,
@@ -50,7 +50,7 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     });
   }
 
-  /** El modal que usa la clase base */
+  /** El modal usado por la clase base */
   protected get modal(): GenericModalComponent {
     return this.modalAlumno;
   }
@@ -59,7 +59,7 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     this.alumnosSrv.load();
   }
 
-  // Columnas de la tabla
+  // Columnas
   columns: TableColumn<Alumno>[] = [
     { key: 'id', header: 'ID', width: '80px' },
     { key: 'nombre', header: 'Nombre' },
@@ -71,32 +71,38 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
   // Botones de acción
   actions: ActionButton<Alumno>[] = [
     {
+      icon: 'eye',
+      btnClass: 'btn-sm btn-outline-secondary',
+      tooltip: 'Ver detalle del alumno',
+      onClick: (alumno) => {
+        this.router.navigate(['/alumnos', alumno.id]);
+      },
+    },
+    {
+      icon: 'bar-chart',
+      btnClass: 'btn-sm btn-outline-dark',
+      tooltip: 'Ver resumen de notas',
+      onClick: (alumno) => {
+        if (this.roleService.hasRole('administrador', 'direccion', 'jefatura')) {
+          this.router.navigate(['/reportes/alumnos', alumno.id, 'resumen']);
+        }
+      },
+    },
+    {
       icon: 'pencil',
       btnClass: 'btn-sm btn-outline-primary',
-      tooltip: 'Editar',
+      tooltip: 'Editar alumno',
       onClick: (alumno) => this.abrirModal(false, alumno),
     },
     {
       icon: 'trash',
       btnClass: 'btn-sm btn-outline-danger',
-      tooltip: 'Eliminar',
+      tooltip: 'Eliminar alumno',
       onClick: (alumno) => this.eliminar(alumno.id),
-    },
-    {
-      icon: 'bar-chart',
-      btnClass: 'btn-sm btn-outline-secondary',
-      tooltip: 'Ver resumen de notas',
-      onClick: (alumno) => {
-        // Solo algunos roles pueden ver el resumen
-        if (!this.roleService.hasRole('administrador', 'direccion', 'jefatura')) {
-          return;
-        }
-        this.router.navigate(['/reportes/alumnos', alumno.id, 'resumen']);
-      },
     },
   ];
 
-  /** Campos usados para el buscador de la base */
+  /** Campos usados para el buscador */
   protected override getSearchFields(a: Alumno): string[] {
     return [
       a.nombre ?? '',
@@ -110,7 +116,7 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     return '¿Eliminar alumno?';
   }
 
-  /** Mapea el modelo del formulario al payload que espera la API */
+  /** Mapea el formulario al payload */
   private buildPayload(): AlumnoPayload {
     return {
       nombre: this.actual.nombre,
@@ -144,7 +150,6 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     this.modal.open();
   }
 
-  /** Guardar usando la API real */
   override guardar(): void {
     if (this.formAlumno && !this.formAlumno.valid) {
       this.formAlumno.form.markAllAsTouched();
@@ -162,7 +167,6 @@ export class AlumnosListComponent extends BaseCrudListComponent<Alumno> {
     this.modal.close();
   }
 
-  /** Eliminar usando la API real */
   override eliminar(id: number): void {
     if (!confirm(this.getDeleteConfirmMessage())) return;
     this.alumnosSrv.deleteAlumno(id);
