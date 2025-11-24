@@ -34,6 +34,14 @@ import { RoleService } from '../../../core/auth/role.service';
 export class CalificacionesListComponent extends BaseCrudListComponent<Calificacion> {
   @ViewChild('modalCalificacion') modalCalificacion!: GenericModalComponent;
 
+  get soloLectura(): boolean {
+    return (
+      !this.roleService.canCreate('calificaciones') &&
+      !this.roleService.canEdit('calificaciones') &&
+      !this.roleService.canDelete('calificaciones')
+    );
+  }
+
   protected get modal(): GenericModalComponent {
     return this.modalCalificacion;
   }
@@ -52,20 +60,7 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
     },
   ];
 
-  actions: ActionButton<Calificacion>[] = [
-    {
-      icon: 'pencil',
-      btnClass: 'btn-sm btn-outline-primary',
-      tooltip: 'Editar',
-      onClick: (c) => this.abrirModal(false, c),
-    },
-    {
-      icon: 'trash',
-      btnClass: 'btn-sm btn-outline-danger',
-      tooltip: 'Eliminar',
-      onClick: (c) => this.eliminar(c.id),
-    },
-  ];
+  actions: ActionButton<Calificacion>[];
 
   constructor(
     public calificacionesSrv: CalificacionesService,
@@ -83,12 +78,40 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
       nota: null,
       fecha: null,
     });
+
+    this.actions = this.buildActions();
   }
 
   override ngOnInit(): void {
     this.calificacionesSrv.load();
-    this.alumnosSrv.load();
-    this.asignaturasSrv.load();
+    if (!this.roleService.isAlumno()) {
+      this.alumnosSrv.load();
+      this.asignaturasSrv.load();
+    }
+  }
+
+  private buildActions(): ActionButton<Calificacion>[] {
+    const actions: ActionButton<Calificacion>[] = [];
+
+    if (this.roleService.canEdit('calificaciones')) {
+      actions.push({
+        icon: 'pencil',
+        btnClass: 'btn-sm btn-outline-primary',
+        tooltip: 'Editar',
+        onClick: (c) => this.abrirModal(false, c),
+      });
+    }
+
+    if (this.roleService.canDelete('calificaciones')) {
+      actions.push({
+        icon: 'trash',
+        btnClass: 'btn-sm btn-outline-danger',
+        tooltip: 'Eliminar',
+        onClick: (c) => this.eliminar(c.id),
+      });
+    }
+
+    return actions;
   }
 
   protected override getSearchFields(c: Calificacion): string[] {
@@ -121,6 +144,13 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
   }
 
   override guardar(): void {
+    if (
+      (this.modoEdicion && !this.roleService.canEdit('calificaciones')) ||
+      (!this.modoEdicion && !this.roleService.canCreate('calificaciones'))
+    ) {
+      return;
+    }
+
     const payload = this.buildPayload();
 
     if (this.modoEdicion) {
@@ -133,11 +163,19 @@ export class CalificacionesListComponent extends BaseCrudListComponent<Calificac
   }
 
   override eliminar(id: number): void {
+    if (!this.roleService.canDelete('calificaciones')) return;
     if (!confirm(this.getDeleteConfirmMessage())) return;
     this.calificacionesSrv.deleteCalificacion(id);
   }
 
   override abrirModal(nuevo = true, item?: Calificacion): void {
+    if (
+      (nuevo && !this.roleService.canCreate('calificaciones')) ||
+      (!nuevo && !this.roleService.canEdit('calificaciones'))
+    ) {
+      return;
+    }
+
     this.modoEdicion = !nuevo;
     if (nuevo) {
       this.actual = { ...this.emptyEntity };

@@ -13,35 +13,37 @@ export interface DepartamentoPayload {
 
 @Injectable({ providedIn: 'root' })
 export class DepartamentosService extends BaseCrudService<Departamento> {
+  private baseUrl = 'departamentos';
+
   constructor(private http: HttpClient) {
     super();
   }
 
-  load() {
-    this.http.get<Departamento[]>('/api/departamentos').subscribe({
-      next: (data) => this.setAll(data),
-      error: (err) => console.error('Error cargando departamentos', err),
+  load(): void {
+    this.http.get<Departamento[]>(this.baseUrl).subscribe({
+      next: data => this.setAll(data),
+      error: err => console.error('Error cargando departamentos', err),
     });
   }
 
-  createDepartamento(payload: DepartamentoPayload) {
-    this.http.post<Departamento>('/api/departamentos', payload).subscribe({
-      next: (d) => this.add(d),
-      error: (err) => console.error('Error creando departamento', err),
+  createDepartamento(payload: DepartamentoPayload): void {
+    this.http.post<Departamento>(this.baseUrl, payload).subscribe({
+      next: d => this.add(d),
+      error: err => console.error('Error creando departamento', err),
     });
   }
 
-  updateDepartamento(id: number, payload: DepartamentoPayload) {
-    this.http.put<Departamento>(`/api/departamentos/${id}`, payload).subscribe({
-      next: (d) => this.update(id, d),
-      error: (err) => console.error('Error actualizando departamento', err),
+  updateDepartamento(id: number, payload: DepartamentoPayload): void {
+    this.http.put<Departamento>(`${this.baseUrl}/${id}`, payload).subscribe({
+      next: d => this.update(id, d),
+      error: err => console.error('Error actualizando departamento', err),
     });
   }
 
-  deleteDepartamento(id: number) {
-    this.http.delete<void>(`/api/departamentos/${id}`).subscribe({
+  deleteDepartamento(id: number): void {
+    this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe({
       next: () => this.delete(id),
-      error: (err) => console.error('Error eliminando departamento', err),
+      error: err => console.error('Error eliminando departamento', err),
     });
   }
 }

@@ -26,7 +26,7 @@ import { AuthService } from '../../core/auth/auth.service';
           </form>
 
             <p class="mt-3 text-muted small">
-          Demo: admin / agarcia / lperez con contraseña <strong>admin</strong>
+          Demo: admin/admin123, agarcia/agarcia123, lperez/lperez123
           </p>
         </div>
       </div>

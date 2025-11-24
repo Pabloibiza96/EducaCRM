@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BaseCrudService } from './base-crud.service';
+import { AuthService } from '../auth/auth.service';
 
 export type Evaluacion = '1ª' | '2ª' | '3ª' | 'Final';
 
@@ -29,48 +30,61 @@ export interface CalificacionPayload {
 @Injectable({ providedIn: 'root' })
 export class CalificacionesService extends BaseCrudService<Calificacion> {
   private http = inject(HttpClient);
-  private baseUrl = '/api/calificaciones';
+  private auth = inject(AuthService);
+  private baseUrl = 'calificaciones';
 
-  /** Carga todas las calificaciones desde el backend */
   load(): void {
-    this.http.get<any[]>(this.baseUrl)
-      .subscribe(rawList => {
-        const list: Calificacion[] = rawList.map(r => ({
+    const user = this.auth.currentUser();
+    const options =
+      user?.rol === 'alumno'
+        ? { params: { alumnoId: user.personaId } }
+        : {};
+
+    this.http.get<any[]>(this.baseUrl, options).subscribe({
+      next: (rawList) => {
+        const list: Calificacion[] = rawList.map((r) => ({
           ...r,
-          // en la BD viene como string, la pasamos a number
           nota: r.nota !== null && r.nota !== undefined ? Number(r.nota) : null,
         }));
         this.setAll(list);
-      });
+      },
+      error: (err) => console.error('Error cargando calificaciones', err),
+    });
   }
 
-  /** Crea una calificación nueva */
   createCalificacion(payload: CalificacionPayload): void {
-    this.http.post<any>(this.baseUrl, payload)
-      .subscribe(r => {
+    if (this.auth.currentUser()?.rol === 'alumno') return;
+    this.http.post<any>(this.baseUrl, payload).subscribe({
+      next: (r) => {
         const cal: Calificacion = {
           ...r,
           nota: r.nota !== null && r.nota !== undefined ? Number(r.nota) : null,
         };
         this.add(cal);
-      });
+      },
+      error: (err) => console.error('Error creando calificación', err),
+    });
   }
 
-  /** Actualiza una calificación existente */
   updateCalificacion(id: number, payload: CalificacionPayload): void {
-    this.http.put<any>(`${this.baseUrl}/${id}`, payload)
-      .subscribe(r => {
+    if (this.auth.currentUser()?.rol === 'alumno') return;
+    this.http.put<any>(`${this.baseUrl}/${id}`, payload).subscribe({
+      next: (r) => {
         const cal: Calificacion = {
           ...r,
           nota: r.nota !== null && r.nota !== undefined ? Number(r.nota) : null,
         };
         this.update(id, cal);
-      });
+      },
+      error: (err) => console.error('Error actualizando calificación', err),
+    });
   }
 
-  /** Elimina una calificación */
   deleteCalificacion(id: number): void {
-    this.http.delete<void>(`${this.baseUrl}/${id}`)
-      .subscribe(() => this.delete(id));
+    if (this.auth.currentUser()?.rol === 'alumno') return;
+    this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe({
+      next: () => this.delete(id),
+      error: (err) => console.error('Error eliminando calificación', err),
+    });
   }
 }

@@ -53,9 +53,20 @@ function validatePayload(body: any): { ok: boolean; msg?: string } {
 }
 
 /** GET /api/calificaciones */
-export async function getAllCalificaciones(_req: Request, res: Response) {
+export async function getAllCalificaciones(req: Request, res: Response) {
   try {
+    const alumnoIdParam = req.query.alumnoId;
+    let alumnoId: number | undefined;
+
+    if (alumnoIdParam !== undefined) {
+      alumnoId = Number(alumnoIdParam);
+      if (Number.isNaN(alumnoId)) {
+        return res.status(400).json({ message: "alumnoId inválido" });
+      }
+    }
+
     const list = await calRepo.find({
+      where: alumnoId ? { alumno: { id: alumnoId } } : {},
       relations: ["alumno", "alumno.persona", "asignatura"],
     });
     return res.json(list.map(toDTO));

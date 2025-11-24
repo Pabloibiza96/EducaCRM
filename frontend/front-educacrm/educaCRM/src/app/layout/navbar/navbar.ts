@@ -29,12 +29,12 @@ export class NavbarComponent {
     {
       label: 'Alumnos',
       path: '/alumnos',
-      roles: ['administrador', 'jefatura'] as Role[],
+      roles: ['profesor', 'jefatura', 'direccion', 'administrador'] as Role[],
     },
     {
       label: 'Profesores',
       path: '/profesores',
-      roles: ['administrador', 'jefatura'] as Role[],
+      roles: ['jefatura', 'direccion', 'administrador'] as Role[],
     },
     {
       label: 'Departamentos',
@@ -45,7 +45,6 @@ export class NavbarComponent {
       label: 'Grupos',
       path: '/grupos',
       roles: [
-        'alumno',
         'profesor',
         'jefatura',
         'direccion',
@@ -56,8 +55,6 @@ export class NavbarComponent {
       label: 'Asignaturas',
       path: '/asignaturas',
       roles: [
-        'alumno',
-        'profesor',
         'jefatura',
         'direccion',
         'administrador',
@@ -66,7 +63,7 @@ export class NavbarComponent {
     {
       label: 'Calificaciones',
       path: '/calificaciones',
-      roles: ['administrador', 'profesor'] as Role[],
+      roles: ['alumno', 'profesor', 'jefatura', 'direccion', 'administrador'] as Role[],
     },
     {
       label: 'Reportes',
@@ -76,7 +73,7 @@ export class NavbarComponent {
     {
       label: 'Admin',
       path: '/admin',
-      roles: ['administrador', 'direccion'] as Role[],
+      roles: ['administrador'] as Role[],
     },
   ];
 

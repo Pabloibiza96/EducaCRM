@@ -25,52 +25,37 @@ export interface UsuarioPayload {
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosService extends BaseCrudService<Usuario> {
+  private baseUrl = 'usuarios';
+
   constructor(private http: HttpClient) {
     super();
   }
 
-  /** Carga todos los usuarios desde la API */
   load(): void {
-    this.http.get<Usuario[]>('/api/usuarios').subscribe({
+    this.http.get<Usuario[]>(this.baseUrl).subscribe({
       next: (data) => this.setAll(data),
       error: (err) => console.error('Error cargando usuarios', err),
     });
   }
 
-  /** Crea un nuevo usuario en backend y actualiza el estado local */
   createUsuario(payload: UsuarioPayload): void {
-    this.http.post<Usuario>('/api/usuarios', payload).subscribe({
-      next: (created) => {
-        this.add(created);
-      },
-      error: (err) => {
-        console.error('Error creando usuario', err);
-        alert('Error creando usuario');
-      },
+    this.http.post<Usuario>(this.baseUrl, payload).subscribe({
+      next: (created) => this.add(created),
+      error: (err) => console.error('Error creando usuario', err),
     });
   }
 
-  /** Actualiza usuario existente en backend y estado local */
   updateUsuario(id: number, payload: UsuarioPayload): void {
-    this.http.put<Usuario>(`/api/usuarios/${id}`, payload).subscribe({
-      next: (updated) => {
-        this.update(updated.id, updated);
-      },
-      error: (err) => {
-        console.error('Error actualizando usuario', err);
-        alert('Error actualizando usuario');
-      },
+    this.http.put<Usuario>(`${this.baseUrl}/${id}`, payload).subscribe({
+      next: (updated) => this.update(id, updated),
+      error: (err) => console.error('Error actualizando usuario', err),
     });
   }
 
-  /** Elimina usuario en backend y del estado local */
   deleteUsuario(id: number): void {
-    this.http.delete<void>(`/api/usuarios/${id}`).subscribe({
+    this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe({
       next: () => this.delete(id),
-      error: (err) => {
-        console.error('Error eliminando usuario', err);
-        alert('Error eliminando usuario');
-      },
+      error: (err) => console.error('Error eliminando usuario', err),
     });
   }
 }

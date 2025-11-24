@@ -69,7 +69,7 @@
           [class.is-invalid]="asignaturaId.invalid && asignaturaId.touched"
         >
           <option [ngValue]="0" disabled>Selecciona asignatura…</option>
-          @@for (asig of asignaturasSrv.items(); track asig.id) {
+          @for (asig of asignaturasSrv.items(); track asig.id) {
           <option [ngValue]="asig.id">{{ asig.nombre }}</option>
           }
         </select>

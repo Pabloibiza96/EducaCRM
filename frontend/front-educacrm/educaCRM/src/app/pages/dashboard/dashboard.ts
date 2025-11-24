@@ -1,8 +1,19 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Role } from '../../core/auth/auth.service';
+import { RoleService } from '../../core/auth/role.service';
 
-type StatCard = { title: string; desc: string; link: string; };
+type StatCard = { title: string; desc: string; link: string; roles: Role[] };
+
+const ALL_CARDS: StatCard[] = [
+  { title: 'Alumnos',       desc: 'Gestión de alumnos y matrículas.',           link: '/alumnos',        roles: ['administrador', 'jefatura'] },
+  { title: 'Profesores',    desc: 'Asignación de profesores a grupos.',         link: '/profesores',     roles: ['administrador', 'jefatura', 'direccion'] },
+  { title: 'Grupos',        desc: 'Cursos, clases y relaciones.',               link: '/grupos',         roles: ['profesor', 'jefatura', 'direccion', 'administrador'] },
+  { title: 'Asignaturas',   desc: 'Materias impartidas por curso.',             link: '/asignaturas',    roles: ['jefatura', 'direccion', 'administrador'] },
+  { title: 'Calificaciones',desc: 'Notas por asignatura y evaluación.',         link: '/calificaciones', roles: ['alumno', 'profesor', 'jefatura', 'direccion', 'administrador'] },
+  { title: 'Admin',         desc: 'Usuarios y permisos (solo roles altos).',    link: '/admin',          roles: ['administrador'] },
+];
 
 @Component({
   selector: 'app-dashboard',
@@ -11,15 +22,8 @@ type StatCard = { title: string; desc: string; link: string; };
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent {
-  // Enlaza las tarjetas del panel con sus rutas
-  cards = signal<StatCard[]>([
-    { title: 'Alumnos',       desc: 'Gestión de alumnos y matrículas.',           link: '/alumnos' },
-    { title: 'Profesores',    desc: 'Asignación de profesores a grupos.',         link: '/profesores' },
-    { title: 'Grupos',        desc: 'Cursos, clases y relaciones.',               link: '/grupos' },
-    { title: 'Asignaturas',   desc: 'Materias impartidas por curso.',             link: '/asignaturas' },
-    { title: 'Calificaciones',desc: 'Notas por asignatura y evaluación.',         link: '/calificaciones' },
-    { title: 'Admin',         desc: 'Usuarios y permisos (solo roles altos).',    link: '/admin' },
-  ]);
+  // Tarjetas filtradas según rol del usuario
+  cards = signal<StatCard[]>([]);
 
   // Ejemplo de métricas (mock) por si quieres mostrarlas luego
   totalAlumnos   = signal<number>(0);
@@ -34,8 +38,10 @@ export class DashboardComponent {
     this.totalGrupos.set(12);
   }
 
-  constructor() {
-    // Carga inicial (opcional)
-    // this.refreshStats();
+  constructor(private roleService: RoleService) {
+    // Mostramos solo las tarjetas que el rol puede ver
+    this.cards.set(
+      ALL_CARDS.filter((c) => this.roleService.hasRole(...c.roles))
+    );
   }
 }

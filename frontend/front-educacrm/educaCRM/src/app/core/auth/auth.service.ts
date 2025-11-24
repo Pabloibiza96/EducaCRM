@@ -2,7 +2,12 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
-export type Role = 'alumno' | 'profesor' | 'jefatura' | 'direccion' | 'administrador';
+export type Role =
+  | 'alumno'
+  | 'profesor'
+  | 'jefatura'
+  | 'direccion'
+  | 'administrador';
 
 export interface User {
   id: number;
@@ -14,15 +19,15 @@ export interface User {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
   currentUser = signal<User | null>(this.restore());
+
+  private readonly baseUrl = 'auth';
 
   constructor(private http: HttpClient) {}
 
-
   private restore(): User | null {
     const raw = localStorage.getItem('edu_user');
-    return raw ? JSON.parse(raw) as User : null;
+    return raw ? (JSON.parse(raw) as User) : null;
   }
 
   private persist(u: User | null) {
@@ -33,7 +38,6 @@ export class AuthService {
     }
   }
 
-
   async login(username: string, password: string): Promise<boolean> {
     try {
       const body = {
@@ -42,14 +46,12 @@ export class AuthService {
       };
 
       const result = await firstValueFrom(
-        this.http.post<User>('/api/auth/login', body)
+        this.http.post<User>(`${this.baseUrl}/login`, body)
       );
 
-     
       this.currentUser.set(result);
       this.persist(result);
       return true;
-
     } catch (err) {
       console.error('Error en login (front):', err);
       return false;

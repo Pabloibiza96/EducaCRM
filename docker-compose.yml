@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: educacrm-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: educacrm
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./educacrm.sql:/docker-entrypoint-initdb.d/educacrm.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./backend/educaCRM-api
+    container_name: educacrm-api
+    restart: always
+    env_file:
+      - ./backend/educaCRM-api/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  front:
+    build: ./frontend/front-educaCRM/educaCRM
+    container_name: educacrm-front
+    restart: always
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+volumes:
+  db_data:

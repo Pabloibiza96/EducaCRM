@@ -103,6 +103,7 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: {
           roles: [
+            'alumno',
             'profesor',
             'jefatura',
             'direccion',

@@ -21,14 +21,13 @@ export interface AlumnoPayload {
 
 @Injectable({ providedIn: 'root' })
 export class AlumnosService extends BaseCrudService<Alumno> {
-
   constructor(private http: HttpClient) {
     super();
   }
 
   /** Carga inicial desde backend */
   load() {
-    this.http.get<Alumno[]>('/api/alumnos').subscribe({
+    this.http.get<Alumno[]>('alumnos').subscribe({
       next: (data) => this.setAll(data),
       error: (err) => console.error('Error cargando alumnos', err),
     });
@@ -36,9 +35,9 @@ export class AlumnosService extends BaseCrudService<Alumno> {
 
   /** Crear alumno en backend + actualizar estado local */
   createAlumno(payload: AlumnoPayload) {
-    return this.http.post<Alumno>('/api/alumnos', payload).subscribe({
+    return this.http.post<Alumno>('alumnos', payload).subscribe({
       next: (alumno) => {
-        this.add(alumno); // actualiza la señal local
+        this.add(alumno);
       },
       error: (err) => console.error('Error creando alumno', err),
     });
@@ -46,9 +45,9 @@ export class AlumnosService extends BaseCrudService<Alumno> {
 
   /** Actualizar alumno en backend + actualizar estado local */
   updateAlumno(id: number, payload: AlumnoPayload) {
-    return this.http.put<Alumno>(`/api/alumnos/${id}`, payload).subscribe({
+    return this.http.put<Alumno>(`alumnos/${id}`, payload).subscribe({
       next: (alumno) => {
-        this.update(id, alumno); // sustituye en la lista local
+        this.update(id, alumno);
       },
       error: (err) => console.error('Error actualizando alumno', err),
     });
@@ -56,9 +55,9 @@ export class AlumnosService extends BaseCrudService<Alumno> {
 
   /** Borrar alumno en backend + actualizar estado local */
   deleteAlumno(id: number) {
-    return this.http.delete<void>(`/api/alumnos/${id}`).subscribe({
+    return this.http.delete<void>(`alumnos/${id}`).subscribe({
       next: () => {
-        this.delete(id); // lo quita de la señal local
+        this.delete(id);
       },
       error: (err) => console.error('Error eliminando alumno', err),
     });

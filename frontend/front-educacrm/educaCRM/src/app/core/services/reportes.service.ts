@@ -34,11 +34,10 @@ export interface AlumnoResumenDTO {
 
 @Injectable({ providedIn: 'root' })
 export class ReportesService {
-  private baseUrl = '/api/reportes';
+  private baseUrl = 'reportes';
 
   constructor(private http: HttpClient) {}
 
-  /** Medias globales por alumno */
   getAlumnosMedias(): Observable<AlumnoMediaRow[]> {
     return this.http.get<any[]>(`${this.baseUrl}/alumnos-medias`).pipe(
       map((rows) =>
@@ -49,15 +48,12 @@ export class ReportesService {
           grupo: r.grupo ?? null,
           numCalificaciones: Number(r.numCalificaciones ?? 0),
           media:
-            r.media === null || r.media === undefined
-              ? null
-              : Number(r.media),
+            r.media === null || r.media === undefined ? null : Number(r.media),
         }))
       )
     );
   }
 
-  /** Resumen detallado de un alumno */
   getResumenAlumno(id: number): Observable<AlumnoResumenDTO> {
     return this.http.get<AlumnoResumenDTO>(
       `${this.baseUrl}/alumnos/${id}/resumen`

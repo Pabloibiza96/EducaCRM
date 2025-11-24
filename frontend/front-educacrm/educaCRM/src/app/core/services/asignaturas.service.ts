@@ -23,7 +23,7 @@ export class AsignaturasService extends BaseCrudService<Asignatura> {
 
   /** Cargar todas las asignaturas desde el backend */
   load(): void {
-    this.http.get<Asignatura[]>('/api/asignaturas').subscribe({
+    this.http.get<Asignatura[]>('asignaturas').subscribe({
       next: (data) => this.setAll(data),
       error: (err) => console.error('Error cargando asignaturas', err),
     });
@@ -31,7 +31,7 @@ export class AsignaturasService extends BaseCrudService<Asignatura> {
 
   /** Crear una nueva asignatura */
   createAsignatura(payload: AsignaturaPayload): void {
-    this.http.post<Asignatura>('/api/asignaturas', payload).subscribe({
+    this.http.post<Asignatura>('asignaturas', payload).subscribe({
       next: (created) => this.add(created),
       error: (err) => console.error('Error creando asignatura', err),
     });
@@ -39,7 +39,7 @@ export class AsignaturasService extends BaseCrudService<Asignatura> {
 
   /** Actualizar asignatura existente */
   updateAsignatura(id: number, payload: AsignaturaPayload): void {
-    this.http.put<Asignatura>(`/api/asignaturas/${id}`, payload).subscribe({
+    this.http.put<Asignatura>(`asignaturas/${id}`, payload).subscribe({
       next: (updated) => this.update(id, updated),
       error: (err) => console.error('Error actualizando asignatura', err),
     });
@@ -47,7 +47,7 @@ export class AsignaturasService extends BaseCrudService<Asignatura> {
 
   /** Eliminar asignatura */
   deleteAsignatura(id: number): void {
-    this.http.delete<void>(`/api/asignaturas/${id}`).subscribe({
+    this.http.delete<void>(`asignaturas/${id}`).subscribe({
       next: () => this.delete(id),
       error: (err) => console.error('Error eliminando asignatura', err),
     });
