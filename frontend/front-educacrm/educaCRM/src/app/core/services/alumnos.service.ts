@@ -53,7 +53,7 @@ export class AlumnosService extends BaseCrudService<Alumno> {
     });
   }
 
-  /** Borrar alumno en backend + actualizar estado local */
+  /** Borrar alumno en backend y actualizar estado local */
   deleteAlumno(id: number) {
     return this.http.delete<void>(`alumnos/${id}`).subscribe({
       next: () => {

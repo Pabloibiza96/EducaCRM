@@ -11,7 +11,6 @@ const personaRepo = AppDataSource.getRepository(Persona);
 const DEFAULT_PASSWORD = "admin";
 const SALT_ROUNDS = 10;
 
-/** Convierte Usuario → DTO */
 function toDTO(u: Usuario): UsuarioDTO {
   return {
     id: u.id,
@@ -20,13 +19,11 @@ function toDTO(u: Usuario): UsuarioDTO {
     personaId: u.persona.id,
     nombre: u.persona.nombre,
     apellidos: u.persona.apellidos,
-    email: u.persona.email ?? null
+    email: u.persona.email ?? null,
   };
 }
 
-/* ============================================================
-   GET /api/usuarios
-   ============================================================ */
+/* GET /api/usuarios*/
 export async function getUsuarios(_req: Request, res: Response) {
   try {
     const usuarios = await usuarioRepo.find();
@@ -37,22 +34,20 @@ export async function getUsuarios(_req: Request, res: Response) {
   }
 }
 
-/* ============================================================
-   POST /api/usuarios
-   ============================================================ */
+/* POST /api/usuarios*/
 export async function createUsuario(req: Request, res: Response) {
   try {
     const body: UsuarioPayload = req.body;
 
     if (!body.username || !body.rol || !body.nombre || !body.apellidos) {
       return res.status(400).json({
-        message: "username, rol, nombre y apellidos son obligatorios"
+        message: "username, rol, nombre y apellidos son obligatorios",
       });
     }
 
     // Username único
     const existing = await usuarioRepo.findOne({
-      where: { username: body.username }
+      where: { username: body.username },
     });
     if (existing) {
       return res.status(409).json({ message: "El usuario ya existe" });
@@ -61,11 +56,11 @@ export async function createUsuario(req: Request, res: Response) {
     // Email único
     if (body.email) {
       const emailExists = await personaRepo.findOne({
-        where: { email: body.email }
+        where: { email: body.email },
       });
       if (emailExists) {
         return res.status(409).json({
-          message: "El email ya está asignado a otra persona"
+          message: "El email ya está asignado a otra persona",
         });
       }
     }
@@ -111,26 +106,24 @@ export async function createUsuario(req: Request, res: Response) {
   }
 }
 
-/* ============================================================
-   PUT /api/usuarios/:id
-   ============================================================ */
+/*PUT /api/usuarios/:id */
 export async function updateUsuario(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
     const body: Partial<UsuarioPayload> = req.body;
 
     const user = await usuarioRepo.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Cambiar username → validar duplicados
+    // Cambiar username y validar duplicados
     if (body.username && body.username !== user.username) {
       const existing = await usuarioRepo.findOne({
-        where: { username: body.username }
+        where: { username: body.username },
       });
       if (existing) {
         return res.status(409).json({ message: "El usuario ya existe" });
@@ -159,7 +152,7 @@ export async function updateUsuario(req: Request, res: Response) {
     if (body.email !== undefined) {
       if (body.email) {
         const emailExists = await personaRepo.findOne({
-          where: { email: body.email }
+          where: { email: body.email },
         });
         if (emailExists && emailExists.id !== persona.id) {
           return res
@@ -180,23 +173,21 @@ export async function updateUsuario(req: Request, res: Response) {
   }
 }
 
-/* ============================================================
-   DELETE /api/usuarios/:id
-   ============================================================ */
+/* DELETE /api/usuarios/:id */
 export async function deleteUsuario(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
 
     const user = await usuarioRepo.findOne({
       where: { id },
-      relations: ["persona"]
+      relations: ["persona"],
     });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Eliminamos persona → usuario cae por cascada
+    // Eliminar persona
     await personaRepo.delete(user.persona.id);
 
     return res.status(204).send();

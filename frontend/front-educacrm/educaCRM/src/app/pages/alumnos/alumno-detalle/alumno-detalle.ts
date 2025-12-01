@@ -1,4 +1,3 @@
-// src/app/pages/alumnos/alumno-detalle/alumno-detalle.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';

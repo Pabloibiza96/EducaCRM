@@ -105,7 +105,7 @@ export class AdminUsersComponent extends BaseCrudListComponent<Usuario> {
     return '¿Eliminar usuario? Ten en cuenta que esta acción no se puede deshacer.';
   }
 
-  /** Construye el payload que espera la API a partir del modelo de formulario */
+
   private buildPayload(): UsuarioPayload {
     const base: UsuarioPayload = {
       username: this.actual.username,

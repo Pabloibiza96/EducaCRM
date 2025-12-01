@@ -48,7 +48,7 @@ export async function getResumenAlumno(req: Request, res: Response) {
       return res.status(404).json({ message: "Alumno no encontrado" });
     }
 
-    // === 1) Medias por evaluación ===
+    // Medias por evaluación
     const mediasPorEvaluacion = await calRepo
       .createQueryBuilder("c")
       .select("c.evaluacion", "evaluacion")
@@ -59,7 +59,7 @@ export async function getResumenAlumno(req: Request, res: Response) {
       .orderBy("c.evaluacion", "ASC")
       .getRawMany();
 
-    // === 2) Medias por asignatura ===
+    // Medias por asignatura
     const mediasPorAsignatura = await calRepo
       .createQueryBuilder("c")
       .innerJoin("c.asignatura", "a")

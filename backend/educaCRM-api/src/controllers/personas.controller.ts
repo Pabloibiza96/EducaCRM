@@ -6,7 +6,7 @@ export const getPersonas = async (_req: Request, res: Response) => {
   try {
     const repo = AppDataSource.getRepository(Persona);
     const data = await repo.find({
-      order: { apellidos: "ASC", nombre: "ASC" }
+      order: { apellidos: "ASC", nombre: "ASC" },
     });
 
     res.json(data);

@@ -56,7 +56,7 @@ export const createProfesor = async (req: Request, res: Response) => {
       // 2) Crear persona
       const personaRepoTx = manager.getRepository(Persona);
       const persona = personaRepoTx.create({
-        dni: `TMP-${Date.now()}`, // simplificado para el proyecto
+        dni: `TMP-${Date.now()}`, 
         nombre,
         apellidos,
         email: email ?? null,
@@ -131,7 +131,9 @@ export const updateProfesor = async (req: Request, res: Response) => {
         if (departamentoId === null) {
           profesor.departamento = null;
         } else {
-          const dep = await depRepoTx.findOne({ where: { id: departamentoId } });
+          const dep = await depRepoTx.findOne({
+            where: { id: departamentoId },
+          });
           if (dep) {
             profesor.departamento = dep;
           }
@@ -182,7 +184,6 @@ export const deleteProfesor = async (req: Request, res: Response) => {
     }
 
     await profesorRepo.remove(profesor);
-    // (Si quieres borrar también persona asociada, se podría hacer otro paso extra)
 
     res.json({ message: "Profesor eliminado" });
   } catch (err) {

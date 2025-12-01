@@ -14,7 +14,6 @@ import { GrupoAsignatura } from "./entities/GrupoAsignatura.js";
 import { Calificacion } from "./entities/Calificacion.js";
 import { Matricula } from "./entities/Matricula.js";
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -29,7 +28,7 @@ export const AppDataSource = new DataSource({
   logging: false,
 
   entities: [
-    __dirname + "/entities/*.js", 
+    __dirname + "/entities/*.js",
     Departamento,
     Persona,
     Usuario,
@@ -39,6 +38,6 @@ export const AppDataSource = new DataSource({
     Grupo,
     GrupoAsignatura,
     Calificacion,
-    Matricula
+    Matricula,
   ],
 });

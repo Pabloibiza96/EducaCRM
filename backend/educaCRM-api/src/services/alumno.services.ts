@@ -77,43 +77,43 @@ export class AlumnoService {
    */
   // dentro de AlumnoService
 
-async create(data: AlumnoCreateUpdateDTO): Promise<AlumnoDTO> {
-  // 1) Crear persona
-const persona = this.personaRepo.create({
-  // DNI temporal corto (máx. 15 chars)
-  dni: `TMP-${Date.now().toString().slice(-8)}`,
-  nombre: data.nombre,
-  apellidos: data.apellidos,
-  email: data.email ?? null,
-  telefono: null,
-  direccion: null,
-});
-  await this.personaRepo.save(persona);
+  async create(data: AlumnoCreateUpdateDTO): Promise<AlumnoDTO> {
+    // 1) Crear persona
+    const persona = this.personaRepo.create({
+      // DNI temporal corto (máx. 15 chars)
+      dni: `TMP-${Date.now().toString().slice(-8)}`,
+      nombre: data.nombre,
+      apellidos: data.apellidos,
+      email: data.email ?? null,
+      telefono: null,
+      direccion: null,
+    });
+    await this.personaRepo.save(persona);
 
-  // 2) Crear alumno (id = persona.id)
-  const alumno = this.alumnoRepo.create({
-    id: persona.id,
-    persona,
-    nia: `ALU-${String(persona.id).padStart(4, "0")}`,
-    fechaAlta: new Date().toISOString().slice(0, 10),
-  });
-  await this.alumnoRepo.save(alumno);
+    // 2) Crear alumno (id = persona.id)
+    const alumno = this.alumnoRepo.create({
+      id: persona.id,
+      persona,
+      nia: `ALU-${String(persona.id).padStart(4, "0")}`,
+      fechaAlta: new Date().toISOString().slice(0, 10),
+    });
+    await this.alumnoRepo.save(alumno);
 
-  // 3) Recargar con relaciones y mapear a DTO
-  const recargado = await this.alumnoRepo.findOneOrFail({
-    where: { id: alumno.id },
-    relations: ["persona", "matriculas", "matriculas.grupo"],
-  });
+    // 3) Recargar con relaciones y mapear a DTO
+    const recargado = await this.alumnoRepo.findOneOrFail({
+      where: { id: alumno.id },
+      relations: ["persona", "matriculas", "matriculas.grupo"],
+    });
 
-  return this.toDTO(recargado);
-}
+    return this.toDTO(recargado);
+  }
 
+  //Actualiza persona
 
-  /**
-   * Actualiza persona + (opcionalmente) grupo.
-   * Por simplicidad, se deja una única matrícula activa.
-   */
-  async update(id: number, data: AlumnoCreateUpdateDTO): Promise<AlumnoDTO | null> {
+  async update(
+    id: number,
+    data: AlumnoCreateUpdateDTO
+  ): Promise<AlumnoDTO | null> {
     const alumno = await this.alumnoRepo.findOne({
       where: { id },
       relations: ["persona", "matriculas", "matriculas.grupo"],
@@ -127,11 +127,12 @@ const persona = this.personaRepo.create({
     alumno.persona.email = data.email ?? null;
     await this.personaRepo.save(alumno.persona);
 
-    // Actualizar grupo (simple: una sola matrícula)
+    // Actualizar grupo
     if (data.grupo) {
-      let grupo = await this.grupoRepo.findOne({ where: { nombre: data.grupo } });
+      let grupo = await this.grupoRepo.findOne({
+        where: { nombre: data.grupo },
+      });
       if (!grupo) {
-        // Opcional: crear grupo si no existe, o podrías devolver error
         grupo = this.grupoRepo.create({
           nombre: data.grupo,
           curso: "",

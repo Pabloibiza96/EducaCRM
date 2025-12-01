@@ -26,7 +26,8 @@ export const getAsignatura = async (req: Request, res: Response) => {
 
   try {
     const asig = await repo().findOne({ where: { id } });
-    if (!asig) return res.status(404).json({ message: "Asignatura no encontrada" });
+    if (!asig)
+      return res.status(404).json({ message: "Asignatura no encontrada" });
     res.json(asig);
   } catch (err) {
     console.error("Error getAsignatura", err);
@@ -44,7 +45,9 @@ export const createAsignatura = async (req: Request, res: Response) => {
     };
 
     if (!nombre || !codigo) {
-      return res.status(400).json({ message: "Nombre y código son obligatorios" });
+      return res
+        .status(400)
+        .json({ message: "Nombre y código son obligatorios" });
     }
 
     const nueva = repo().create({

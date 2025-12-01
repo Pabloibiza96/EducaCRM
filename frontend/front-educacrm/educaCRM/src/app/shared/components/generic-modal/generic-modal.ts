@@ -40,7 +40,7 @@ export class GenericModalComponent implements AfterViewInit {
   title = input<string>('Modal');
   confirmText = input<string>('Guardar');
   cancelText = input<string>('Cancelar');
-  modalSize = input<string>(''); // '', 'modal-lg', 'modal-xl', 'modal-sm'
+  modalSize = input<string>(''); 
   headerClass = input<string>('bg-primary text-white');
   confirmBtnClass = input<string>('btn-primary');
   

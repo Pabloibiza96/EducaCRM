@@ -1,18 +1,17 @@
-// src/services/profesor.service.ts
-import { AppDataSource } from '../data-source.js';
-import { Profesor } from '../entities/Profesor.js';
-import { Persona } from '../entities/Persona.js';
-import { Departamento } from '../entities/Departamento.js';
+import { AppDataSource } from "../data-source.js";
+import { Profesor } from "../entities/Profesor.js";
+import { Persona } from "../entities/Persona.js";
+import { Departamento } from "../entities/Departamento.js";
 import {
   ProfesorDTO,
   ProfesorCreateDTO,
   ProfesorUpdateDTO,
-} from '../models/ProfesorDTO.js';
-import { generateTmpDni } from '../utils/dni.js';
+} from "../models/ProfesorDTO.js";
+import { generateTmpDni } from "../utils/dni.js";
 
 const profesorRepo = AppDataSource.getRepository(Profesor);
 const personaRepo = AppDataSource.getRepository(Persona);
-const deptRepo    = AppDataSource.getRepository(Departamento);
+const deptRepo = AppDataSource.getRepository(Departamento);
 
 function toDTO(p: Profesor): ProfesorDTO {
   return {
@@ -27,7 +26,7 @@ function toDTO(p: Profesor): ProfesorDTO {
 
 export class ProfesorService {
   async getAll(): Promise<ProfesorDTO[]> {
-    const list = await profesorRepo.find(); // Persona + Departamento vienen eager
+    const list = await profesorRepo.find();
     return list.map(toDTO);
   }
 
@@ -46,7 +45,7 @@ export class ProfesorService {
     });
     await personaRepo.save(persona);
 
-    // 2) Departamento (opcional, por id)
+    // 2) Departamento 
     let departamento: Departamento | null = null;
     if (data.departamentoId) {
       departamento =
@@ -66,13 +65,17 @@ export class ProfesorService {
     return toDTO(profesor);
   }
 
-  async update(id: number, data: ProfesorUpdateDTO): Promise<ProfesorDTO | null> {
+  async update(
+    id: number,
+    data: ProfesorUpdateDTO
+  ): Promise<ProfesorDTO | null> {
     const profesor = await profesorRepo.findOne({ where: { id } });
     if (!profesor) return null;
 
     // Actualizar persona
     if (data.nombre !== undefined) profesor.persona.nombre = data.nombre;
-    if (data.apellidos !== undefined) profesor.persona.apellidos = data.apellidos;
+    if (data.apellidos !== undefined)
+      profesor.persona.apellidos = data.apellidos;
     if (data.email !== undefined) profesor.persona.email = data.email;
     await personaRepo.save(profesor.persona);
 
@@ -95,7 +98,6 @@ export class ProfesorService {
     const profesor = await profesorRepo.findOne({ where: { id } });
     if (!profesor) return false;
 
-    // Por la FK 1:1, borrar la persona borra el profesor
     await personaRepo.remove(profesor.persona);
     return true;
   }

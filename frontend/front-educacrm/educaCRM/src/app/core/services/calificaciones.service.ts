@@ -36,9 +36,7 @@ export class CalificacionesService extends BaseCrudService<Calificacion> {
   load(): void {
     const user = this.auth.currentUser();
     const options =
-      user?.rol === 'alumno'
-        ? { params: { alumnoId: user.personaId } }
-        : {};
+      user?.rol === 'alumno' ? { params: { alumnoId: user.personaId } } : {};
 
     this.http.get<any[]>(this.baseUrl, options).subscribe({
       next: (rawList) => {

@@ -4,8 +4,6 @@
 DROP DATABASE IF EXISTS educacrm;
 CREATE DATABASE educacrm CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE educacrm;
-
--- Ajustes generales (opcional)
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
 
@@ -18,7 +16,7 @@ CREATE TABLE departamentos (
 
 CREATE TABLE personas (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  dni VARCHAR(40) NOT NULL,   -- 🔧 Ajustado a VARCHAR(40)
+  dni VARCHAR(40) NOT NULL,  
   nombre VARCHAR(50) NOT NULL,
   apellidos VARCHAR(100) NOT NULL,
   telefono VARCHAR(20),
@@ -45,7 +43,7 @@ CREATE TABLE usuarios (
 
 -- 4) Subtipos de personas
 CREATE TABLE alumnos (
-  id INT PRIMARY KEY, -- FK a personas.id
+  id INT PRIMARY KEY, 
   nia VARCHAR(15) NOT NULL,
   fecha_alta DATE,
   CONSTRAINT fk_alumnos_persona
@@ -55,7 +53,7 @@ CREATE TABLE alumnos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE profesores (
-  id INT PRIMARY KEY, -- FK a personas.id
+  id INT PRIMARY KEY, 
   fecha_alta DATE,
   departamento_id INT,
   CONSTRAINT fk_profesores_persona
@@ -68,7 +66,7 @@ CREATE TABLE profesores (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE personal (
-  id INT PRIMARY KEY, -- FK a personas.id
+  id INT PRIMARY KEY, 
   puesto VARCHAR(100),
   fecha_alta DATE,
   departamento_id INT,

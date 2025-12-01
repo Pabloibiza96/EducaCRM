@@ -49,7 +49,12 @@ export const routes: Routes = [
         title: 'Detalle alumno | EducaCRM',
         canActivate: [roleGuard],
         data: {
-          roles: ['administrador', 'jefatura', 'profesor', 'direccion'] as Role[],
+          roles: [
+            'administrador',
+            'jefatura',
+            'profesor',
+            'direccion',
+          ] as Role[],
         },
       },
 
@@ -150,7 +155,14 @@ export const routes: Routes = [
           ),
         title: 'Resumen alumno | EducaCRM',
         canActivate: [roleGuard],
-        data: { roles: ['administrador', 'direccion', 'jefatura', 'profesor'] as Role[] },
+        data: {
+          roles: [
+            'administrador',
+            'direccion',
+            'jefatura',
+            'profesor',
+          ] as Role[],
+        },
       },
     ],
   },

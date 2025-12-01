@@ -1,4 +1,3 @@
-
 import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,19 +24,21 @@ import { RoleService } from '../../../core/auth/role.service';
 @Component({
   standalone: true,
   selector: 'app-profesores-list',
-  imports: [CommonModule, FormsModule, GenericModalComponent, CrudTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    GenericModalComponent,
+    CrudTableComponent,
+  ],
   templateUrl: './profesores-list.html',
 })
 export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
   @ViewChild('modalProfesor') modalProfesor!: GenericModalComponent;
 
-  // Usamos el mismo patrón que en alumnos: el modal se expone vía getter
   protected get modal(): GenericModalComponent {
     return this.modalProfesor;
   }
 
-  // ⚠️ OJO: NO guardamos aquí un array manual, sino que
-  // usamos un getter que lee del DepartamentosService (con signals).
   get departamentos(): Departamento[] {
     return this.deptSrv.items();
   }
@@ -74,7 +75,6 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
     private deptSrv: DepartamentosService,
     public roleService: RoleService
   ) {
-    // Estado inicial del formulario (igual patrón que alumnos)
     super(profesoresService, {
       id: 0,
       nombre: '',
@@ -86,7 +86,6 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
   }
 
   override ngOnInit(): void {
-    // Cargamos profesores y departamentos desde el backend
     this.profesoresService.load();
     this.deptSrv.load();
   }
@@ -120,28 +119,23 @@ export class ProfesoresListComponent extends BaseCrudListComponent<Profesor> {
     const payload = this.buildPayload();
 
     if (this.modoEdicion) {
-      // Editar existente → PUT
       this.profesoresService.updateProfesor(this.actual.id, payload);
     } else {
-      // Crear nuevo → POST
       this.profesoresService.createProfesor(payload);
     }
 
     this.modalProfesor.close();
   }
 
-  /** Eliminar usando la API real */
   override eliminar(id: number): void {
     if (!confirm(this.getDeleteConfirmMessage())) return;
     this.profesoresService.deleteProfesor(id);
   }
 
-  /** Ajustamos departamentoId al abrir el modal */
   override abrirModal(nuevo: boolean, item?: Profesor | null): void {
     super.abrirModal(nuevo, item);
 
     if (!nuevo && item) {
-      // Si el backend ya devuelve departamentoId, usamos eso
       this.actual.departamentoId =
         (item as any).departamentoId ?? this.actual.departamentoId ?? null;
     } else {

@@ -9,7 +9,7 @@ import {
 } from "typeorm";
 import { Persona } from "./Persona.js";
 import { Departamento } from "./Departamento.js";
-import { GrupoAsignatura } from "./GrupoAsignatura.js"; 
+import { GrupoAsignatura } from "./GrupoAsignatura.js";
 
 @Entity("profesores")
 export class Profesor {
@@ -25,7 +25,7 @@ export class Profesor {
 
   @ManyToOne(() => Departamento, (d) => d.profesores, {
     nullable: true,
-    eager: true,        
+    eager: true,
   })
   @JoinColumn({ name: "departamento_id" })
   departamento!: Departamento | null;

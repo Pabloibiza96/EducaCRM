@@ -39,10 +39,10 @@ export interface TableColumn<T = any> {
  * Configuración de botones de acción.
  */
 export interface ActionButton<T = any> {
-  /** Icono de Bootstrap Icons (ej: 'pencil', 'trash') */
+  /** Icono de Bootstrap*/
   icon?: string;
   
-  /** Texto del botón (opcional, si no hay icono) */
+  /** Texto del botón */
   label?: string;
   
   /** Clases CSS del botón */

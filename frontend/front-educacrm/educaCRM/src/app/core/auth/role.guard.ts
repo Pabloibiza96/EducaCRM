@@ -16,17 +16,17 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return false;
   }
 
-  // Si no hay roles definidos, dejamos pasar (por defecto)
+  // Si no hay roles definidos, dejamos pasar 
   if (!allowedRoles || allowedRoles.length === 0) {
     return true;
   }
 
-  // Si su rol está entre los permitidos = OK
+  // Si su rol está entre los permitidos, ok
   if (auth.hasRole(...allowedRoles)) {
     return true;
   }
 
-  // Si no tiene permiso = lo mandamos a inicio
+  // Si no tiene permiso, lo mandamos a inicio
   router.navigate(['/']);
   return false;
 };

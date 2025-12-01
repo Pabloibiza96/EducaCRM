@@ -12,7 +12,6 @@ import { Calificacion } from "./Calificacion.js";
 
 @Entity("alumnos")
 export class Alumno {
-  // PK que es a la vez FK a personas.id
   @PrimaryColumn({ type: "int" })
   id!: number;
 
