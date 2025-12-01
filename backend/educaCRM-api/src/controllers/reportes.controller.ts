@@ -11,14 +11,18 @@ export async function getAlumnosMedias(req: Request, res: Response) {
       .createQueryBuilder("c")
       .innerJoin("c.alumno", "al")
       .innerJoin("al.persona", "p")
+      .leftJoin("al.matriculas", "m")
+      .leftJoin("m.grupo", "g")
       .select("al.id", "alumnoId")
       .addSelect("p.nombre", "nombre")
       .addSelect("p.apellidos", "apellidos")
+      .addSelect("g.nombre", "grupo")
       .addSelect("COUNT(*)", "numCalificaciones")
       .addSelect("ROUND(AVG(c.nota), 2)", "media")
       .groupBy("al.id")
       .addGroupBy("p.nombre")
       .addGroupBy("p.apellidos")
+      .addGroupBy("g.nombre")
       .orderBy("p.apellidos", "ASC")
       .getRawMany();
 

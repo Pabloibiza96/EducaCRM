@@ -24,6 +24,7 @@ export const getProfesores = async (_req: Request, res: Response) => {
       apellidos: p.persona?.apellidos ?? "",
       email: p.persona?.email ?? null,
       departamento: p.departamento?.nombre ?? null,
+      departamentoId: p.departamento?.id ?? null,
     }));
 
     res.json(dto);
@@ -35,7 +36,7 @@ export const getProfesores = async (_req: Request, res: Response) => {
 
 // POST /api/profesores
 export const createProfesor = async (req: Request, res: Response) => {
-  const { nombre, apellidos, email, departamento } = req.body;
+  const { nombre, apellidos, email, departamentoId } = req.body;
 
   if (!nombre || !apellidos) {
     return res
@@ -45,15 +46,11 @@ export const createProfesor = async (req: Request, res: Response) => {
 
   try {
     const result = await AppDataSource.transaction(async (manager) => {
-      // 1) Buscar o crear departamento (por nombre)
+      // 1) Buscar departamento por ID
       let depEntity: Departamento | null = null;
-      if (departamento && departamento.trim().length > 0) {
+      if (departamentoId) {
         const depRepoTx = manager.getRepository(Departamento);
-        depEntity = await depRepoTx.findOne({ where: { nombre: departamento } });
-        if (!depEntity) {
-          depEntity = depRepoTx.create({ nombre: departamento });
-          await depRepoTx.save(depEntity);
-        }
+        depEntity = await depRepoTx.findOne({ where: { id: departamentoId } });
       }
 
       // 2) Crear persona
@@ -87,6 +84,7 @@ export const createProfesor = async (req: Request, res: Response) => {
         apellidos: loaded!.persona?.apellidos ?? "",
         email: loaded!.persona?.email ?? null,
         departamento: loaded!.departamento?.nombre ?? null,
+        departamentoId: loaded!.departamento?.id ?? null,
       };
     });
 
@@ -100,7 +98,7 @@ export const createProfesor = async (req: Request, res: Response) => {
 // PUT /api/profesores/:id
 export const updateProfesor = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { nombre, apellidos, email, departamento } = req.body;
+  const { nombre, apellidos, email, departamentoId } = req.body;
 
   if (!id || Number.isNaN(id)) {
     return res.status(400).json({ message: "ID inválido" });
@@ -128,17 +126,15 @@ export const updateProfesor = async (req: Request, res: Response) => {
 
       await personaRepoTx.save(profesor.persona);
 
-      // Actualizar departamento (por nombre)
-      if (departamento !== undefined) {
-        if (departamento === null || departamento.trim() === "") {
+      // Actualizar departamento (por ID)
+      if (departamentoId !== undefined) {
+        if (departamentoId === null) {
           profesor.departamento = null;
         } else {
-          let dep = await depRepoTx.findOne({ where: { nombre: departamento } });
-          if (!dep) {
-            dep = depRepoTx.create({ nombre: departamento });
-            await depRepoTx.save(dep);
+          const dep = await depRepoTx.findOne({ where: { id: departamentoId } });
+          if (dep) {
+            profesor.departamento = dep;
           }
-          profesor.departamento = dep;
         }
         await profRepoTx.save(profesor);
       }
@@ -155,6 +151,7 @@ export const updateProfesor = async (req: Request, res: Response) => {
             apellidos: updated.persona?.apellidos ?? "",
             email: updated.persona?.email ?? null,
             departamento: updated.departamento?.nombre ?? null,
+            departamentoId: updated.departamento?.id ?? null,
           }
         : null;
     });
